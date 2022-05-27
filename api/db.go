@@ -35,7 +35,7 @@ func Read(c echo.Context) error {
 		return resp(c, 403, "permission denied")
 	}
 
-	if !verifyId(id) {
+	if !verifyParams([]string{dbName, col, id}) {
 		logger.W("[api.Read] id %s is not valid\n", id)
 		return resp(c, 525, "id is not valid")
 	}
@@ -73,7 +73,7 @@ func Write(c echo.Context) error {
 		return resp(c, 403, "permission denied")
 	}
 
-	if !verifyId(id) {
+	if !verifyParams([]string{dbName, col, id}) {
 		logger.W("[api.Write] id %s is not valid\n", id)
 		return resp(c, 525, "id is not valid")
 	}
@@ -118,7 +118,7 @@ func Delete(c echo.Context) error {
 		return resp(c, 403, "permission denied")
 	}
 
-	if !verifyId(id) {
+	if !verifyParams([]string{dbName, col, id}) {
 		logger.W("[api.Delete] id %s is not valid\n", id)
 		return resp(c, 525, "id is not valid")
 	}

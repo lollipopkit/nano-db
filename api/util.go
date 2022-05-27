@@ -91,8 +91,20 @@ func verifyId(id string) bool {
 	if strings.Contains(id, "\\") {
 		return false
 	}
+	if strings.Contains(id, " ") {
+		return false
+	}
 	if len(id) > consts.MaxIdLength {
 		return false
+	}
+	return true
+}
+
+func verifyParams(params []string) bool {
+	for _, param := range params {
+		if !verifyId(param) {
+			return false
+		}
 	}
 	return true
 }
