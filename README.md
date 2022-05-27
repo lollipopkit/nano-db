@@ -1,32 +1,42 @@
 ## Nano DB
-A lightweight DB in golang.
+一款以golang编写的轻量kv数据库。
 
-## Features
-- RESTful: `{GET|POST|DELETE} /{DB}/{TABLE}/{ID}`
-- Cache: LRU
-- Permission: ACL
-- Lightweight: can run on a Raspberry Pi Zero
+## 特点
+- RESTful接口
+- 缓存
+- 权限管理
+- 轻量：甚至可以在Raspberry Pi Zero上运行
 
-## Usage
-### Get cookie
-`./nano-db -c {userName}`
-then the cookie will print to stdout.
+## 使用
+### 更改salt
+修改`consts/app.go`内`CookieSalt`的值，需要固定的值，随意填写。
+### 获取cookie
+为你的用户生成cookie  
+`./nano-db -c {userName}`  
+然后cookie会被打印到控制台，后继需要鉴权的操作，都需要在headers内附带此cookie
 
-### Control DB
-The first user who access the {DB} will be the {DB}'s admin.
-#### Get data
+### 数据库
+#### 初始化
+需要先初始化数据库，才能进行后继操作  
+第一个访问{DB}的用户将会成为该数据库的唯一管理员  
+`GET https://example.com/{DB}`
+
+#### 获取
 `GET https://example.com/novel/books/1`
 
-#### Add/Update
+#### 插入/更新
 `POST https://example.com/novel/books/1`
-with JSON body
+需要在body附带需要写入的数据（仅支持json）
 
-#### Delete
+#### 删除
 `DELETE https://example.com/novel/books/1`
 
-#### Status
-`GET https://example.com/status`
+#### 查看数据库是否存活
+`HEAD https://example.com/`
 
-## Attention
-`{DB}/{TABLE}/{ID}` cant contains `/`,` `,`\\`,`..`, and its length cant be larger than 50.
+#### 查看总状态
+`GET https://example.com/`
+
+## 注意⚠️
+`{DB}`,`{TABLE}`,`{ID}` 不能包含字符 `/`,` `,`\\`,`..`，并且他们的长度都不能超过50.
 

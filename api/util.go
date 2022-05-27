@@ -12,9 +12,9 @@ import (
 	"github.com/labstack/echo"
 )
 
-func resp(c echo.Context, code int, body interface{}) error {
+func resp(c echo.Context, code int, data interface{}) error {
 	return c.JSON(200, map[string]interface{}{
-		"body": body,
+		"data": data,
 		"code": code,
 	})
 }

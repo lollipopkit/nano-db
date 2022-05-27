@@ -15,8 +15,8 @@ type ACL struct {
 }
 
 type ACLRule struct {
-	DBName string 	`json:"db"`
 	UserName string	`json:"user"`
+	DBNames []string 	`json:"db"`
 }
 
 func (acl *ACL) Save() error {
@@ -50,13 +50,19 @@ func (acl *ACL) Load() error {
 }
 
 func (acl *ACL) UpdateRule(dbName, userName string) error {
-	for _, rule := range acl.Rules {
-		if rule.DBName == dbName {
-			return nil
+	for i, rule := range acl.Rules {
+		if rule.UserName == userName {
+			for _, db := range rule.DBNames {
+				if db == dbName {
+					return nil
+				}
+			}
+			acl.Rules[i].DBNames = append(rule.DBNames, dbName)
+			return acl.Save()
 		}
 	}
 	acl.Rules = append(acl.Rules, ACLRule{
-		DBName: dbName,
+		DBNames: []string{dbName},
 		UserName: userName,
 	})
 	return acl.Save()
@@ -64,8 +70,13 @@ func (acl *ACL) UpdateRule(dbName, userName string) error {
 
 func (acl *ACL) Can(dbName, userName string) bool {
 	for _, rule := range acl.Rules {
-		if rule.DBName == dbName {
-			return rule.UserName == userName
+		if rule.UserName == userName {
+			for _, db := range rule.DBNames {
+				if db == dbName {
+					return true
+				}
+			}
+			break
 		}
 	}
 	return false
@@ -73,8 +84,10 @@ func (acl *ACL) Can(dbName, userName string) bool {
 
 func (acl *ACL) HaveDB(dbName string) bool {
 	for _, rule := range acl.Rules {
-		if rule.DBName == dbName {
-			return true
+		for _, db := range rule.DBNames {
+			if db == dbName {
+				return true
+			}
 		}
 	}
 	return false
