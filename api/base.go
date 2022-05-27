@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/LollipopKit/nano-db/consts"
-	"github.com/LollipopKit/nano-db/logger"
+	"git.lolli.tech/LollipopKit/nano-db/consts"
+	"git.lolli.tech/LollipopKit/nano-db/logger"
 	"github.com/labstack/echo"
 )
 
@@ -28,7 +28,7 @@ func Status(c echo.Context) error {
 	}
 
 	time1 := time.Now()
-	
+
 	dirs, err := ioutil.ReadDir(consts.DBDir)
 	if err != nil {
 		return resp(c, 525, "ioutil.ReadDir(): "+err.Error())

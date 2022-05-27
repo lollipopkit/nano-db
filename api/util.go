@@ -8,14 +8,14 @@ import (
 	"log"
 	"strings"
 
-	"github.com/LollipopKit/nano-db/consts"
+	"git.lolli.tech/LollipopKit/nano-db/consts"
 	"github.com/labstack/echo"
 )
 
 func resp(c echo.Context, code int, body interface{}) error {
 	return c.JSON(200, map[string]interface{}{
-		"code": code,
 		"body": body,
+		"code": code,
 	})
 }
 
@@ -78,7 +78,7 @@ func reverseString(s string) string {
 }
 
 func GenCookie(userName string) string {
-	return fmt.Sprintf("n=%s; s=%s\n", encodeBase64(userName), generateCookieMd5(userName))
+	return fmt.Sprintf("n=%s; s=%s", encodeBase64(userName), generateCookieMd5(userName))
 }
 
 func verifyId(id string) bool {

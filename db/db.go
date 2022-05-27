@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/LollipopKit/nano-db/consts"
-	"github.com/LollipopKit/nano-db/model"
+	"git.lolli.tech/LollipopKit/nano-db/consts"
+	"git.lolli.tech/LollipopKit/nano-db/model"
 	jsoniter "github.com/json-iterator/go"
 )
 

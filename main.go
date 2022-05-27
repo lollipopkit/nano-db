@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 
-	"github.com/LollipopKit/nano-db/api"
-	"github.com/LollipopKit/nano-db/consts"
-	"github.com/LollipopKit/nano-db/logger"
+	"git.lolli.tech/LollipopKit/nano-db/api"
+	"git.lolli.tech/LollipopKit/nano-db/consts"
+	"git.lolli.tech/LollipopKit/nano-db/logger"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -15,14 +15,18 @@ func main() {
 	userName := flag.String("c", "", "generate the cookie with -c <username>")
 	flag.Parse()
 
-	// setup logger
-	go logger.Setup()
+	if consts.CookieSalt == "nano-db" {
+		println(consts.CookieNotChanged)
+	}
 
 	// generate cookie
 	if *userName != "" {
 		println(api.GenCookie(*userName))
 		return
 	}
+
+	// setup logger
+	go logger.Setup()
 
 	// Echo instance
 	e := echo.New()
@@ -34,8 +38,10 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/", api.Home)
-	e.GET("/status", api.Status)
+	e.HEAD("/", api.Home)
+	e.GET("/", api.Status)
+	e.GET("/:db", api.Init)
+	//e.DELETE("/:db", api.DeleteDB)
 	e.GET("/:db/:col/:id", api.Read)
 	e.POST("/:db/:col/:id", api.Write)
 	e.DELETE("/:db/:col/:id", api.Delete)

@@ -2,22 +2,64 @@ package api
 
 import (
 	"os"
+	"sync"
 
-	"github.com/LollipopKit/nano-db/consts"
-	"github.com/LollipopKit/nano-db/db"
-	"github.com/LollipopKit/nano-db/logger"
-	"github.com/LollipopKit/nano-db/model"
+	"git.lolli.tech/LollipopKit/nano-db/consts"
+	"git.lolli.tech/LollipopKit/nano-db/db"
+	"git.lolli.tech/LollipopKit/nano-db/logger"
+	"git.lolli.tech/LollipopKit/nano-db/model"
 	"github.com/labstack/echo"
 )
 
 var (
 	cacher = model.NewCacher(consts.CacherMaxLength * 100)
+	acl = &model.ACL{}
+	aclLock = &sync.RWMutex{}
 )
 
 const (
 	pathFmt   = "%s/%s/%s"
 	emptyPath = "[db] or [col] or [id] is empty"
 )
+
+func init() {
+	err := acl.Load()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Init(c echo.Context) error {
+	dbName := c.Param("db")
+	if dbName == "" {
+		return resp(c, 520, "dbName is empty")
+	}
+	if acl.HaveDB(dbName) {
+		return resp(c, 200, "already exist")
+	}
+
+	loggedIn, userName := accountVerify(c)
+	if !loggedIn {
+		if userName != consts.AnonymousUser {
+			logger.W("[api.Init] user %s is trying to init\n", userName)
+		}
+		return resp(c, 403, "permission denied")
+	}
+
+	err := os.Mkdir(consts.DBDir+dbName, consts.FilePermission)
+	if err != nil {
+		logger.E("[api.Init] os.MkdirAll(): %s\n", err.Error())
+		return resp(c, 527, "os.MkdirAll(): "+err.Error())
+	}
+
+	err = acl.UpdateRule(dbName, userName)
+	if err != nil {
+		logger.E("[api.Init] acl.UpdateRule(): %s\n", err.Error())
+		return resp(c, 526, "acl.UpdateRule(): "+err.Error())
+	}
+
+	return resp(c, 200, "ok")
+}
 
 func Read(c echo.Context) error {
 	dbName := c.Param("db")
@@ -28,7 +70,7 @@ func Read(c echo.Context) error {
 	}
 
 	loggedIn, userName := accountVerify(c)
-	if !loggedIn {
+	if !loggedIn || !acl.Can(dbName, userName) {
 		if userName != consts.AnonymousUser {
 			logger.W("[api.Read] user %s is trying to read\n", userName)
 		}
@@ -66,7 +108,7 @@ func Write(c echo.Context) error {
 	}
 
 	loggedIn, userName := accountVerify(c)
-	if !loggedIn {
+	if !loggedIn || !acl.Can(dbName, userName) {
 		if userName != consts.AnonymousUser {
 			logger.W("[api.Write] user %s is trying to write\n", userName)
 		}
@@ -86,10 +128,6 @@ func Write(c echo.Context) error {
 	}
 
 	p := path(dbName, col, id)
-
-	if err := os.MkdirAll(consts.DBDir + dbName + "/" + col, consts.FilePermission); err != nil {
-		return err
-	}
 
 	err = db.Write(p, content)
 	if err != nil {
@@ -111,7 +149,7 @@ func Delete(c echo.Context) error {
 	}
 
 	loggedIn, userName := accountVerify(c)
-	if !loggedIn {
+	if !loggedIn || !acl.Can(dbName, userName) {
 		if userName != consts.AnonymousUser {
 			logger.W("[api.Delete] user %s is trying to delete\n", userName)
 		}
