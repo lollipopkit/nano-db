@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -76,30 +77,30 @@ func GenCookie(userName string) string {
 	return fmt.Sprintf("n=%s; s=%s", encodeBase64(userName), generateCookieMd5(userName))
 }
 
-func verifyId(id string) bool {
+func verifyId(id string) error {
 	if strings.Contains(id, "..") {
-		return false
+		return errors.New(id + " contains ..")
 	}
 	if strings.Contains(id, "/") {
-		return false
+		return errors.New(id + " contains /")
 	}
 	if strings.Contains(id, "\\") {
-		return false
+		return errors.New(id + " contains \\")
 	}
 	if strings.Contains(id, " ") {
-		return false
+		return errors.New(id + " contains space")
 	}
 	if len(id) > consts.MaxIdLength {
-		return false
+		return errors.New(id + " is too long")
 	}
-	return true
+	return nil
 }
 
-func verifyParams(params []string) bool {
+func verifyParams(params []string) error {
 	for _, param := range params {
-		if !verifyId(param) {
-			return false
+		if err := verifyId(param); err != nil {
+			return err
 		}
 	}
-	return true
+	return nil
 }

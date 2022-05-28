@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
@@ -88,12 +89,12 @@ func Read(c echo.Context) error {
 	}
 	aclLock.RUnlock()
 
-	if !verifyParams([]string{dbName, col, id}) {
-		logger.W("[api.Read] id %s is not valid\n", id)
-		return resp(c, 525, "id is not valid")
-	}
-
+	
 	p := path(dbName, col, id)
+	if err := verifyParams([]string{dbName, col, id}); err != nil {
+		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
+		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
+	}
 
 	item, have := cacher.Get(p)
 	if have {
@@ -131,9 +132,10 @@ func Write(c echo.Context) error {
 	}
 	aclLock.RUnlock()
 
-	if !verifyParams([]string{dbName, col, id}) {
-		logger.W("[api.Write] id %s is not valid\n", id)
-		return resp(c, 525, "id is not valid")
+	p := path(dbName, col, id)
+	if err := verifyParams([]string{dbName, col, id}); err != nil {
+		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
+		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
 	var content interface{}
@@ -142,8 +144,6 @@ func Write(c echo.Context) error {
 		logger.E("[api.Write] c.Bind(): %s\n", err.Error())
 		return resp(c, 522, "c.Bind(): "+err.Error())
 	}
-
-	p := path(dbName, col, id)
 
 	err = os.MkdirAll(consts.DBDir + dbName + "/" + col, consts.FilePermission)
 	if err != nil {
@@ -181,12 +181,11 @@ func Delete(c echo.Context) error {
 	}
 	aclLock.RUnlock()
 
-	if !verifyParams([]string{dbName, col, id}) {
-		logger.W("[api.Delete] id %s is not valid\n", id)
-		return resp(c, 525, "id is not valid")
-	}
-
 	p := path(dbName, col, id)
+	if err := verifyParams([]string{dbName, col, id}); err != nil {
+		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
+		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
+	}
 
 	err := db.Delete(p)
 	if err != nil {

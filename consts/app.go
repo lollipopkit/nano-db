@@ -20,5 +20,5 @@ const (
 	AnonymousUser = "anonymous"
 	HackUser      = "hack"
 
-	MaxIdLength = 20
+	MaxIdLength = 37
 )
