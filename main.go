@@ -13,11 +13,19 @@ import (
 func main() {
 	addr := flag.String("u", "0.0.0.0:3777", "specific the addr to listen")
 	userName := flag.String("c", "", "generate the cookie with -c <username>")
+	salt := flag.String("s", "", "set salt for cookie")
+	cacheLen := flag.Int("l", 100, "set the max length of cache")
 	flag.Parse()
+
+	if *salt != "" {
+		consts.CookieSalt = *salt
+	}
 
 	if consts.CookieSalt == "nano-db" {
 		println(consts.CookieNotChanged)
 	}
+
+	consts.CacherMaxLength = *cacheLen
 
 	// generate cookie
 	if *userName != "" {
