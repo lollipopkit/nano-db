@@ -16,6 +16,7 @@ var (
 	// pathLocks : {"PATH": LOCK}
 	pathLockCacher = model.NewCacher(consts.CacherMaxLength * 100)
 	ErrLockConvert = errors.New("lock convert failed")
+	ErrNoDocument = errors.New("no document")
 )
 
 func init() {
@@ -43,7 +44,7 @@ func Read(path string, model interface{}) error {
 	return wrapLock(path, func() error {
 		data, err := ioutil.ReadFile(consts.DBDir + path)
 		if err != nil {
-			return err
+			return ErrNoDocument
 		}
 		return json.Unmarshal(data, &model)
 	}, false)

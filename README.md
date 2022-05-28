@@ -25,6 +25,8 @@ Usage of nano-db:
 两种方法：
 - 修改`consts/app.go`内`CookieSalt`的值，需要固定的值，随意填写。  
 - 使用`-s`参数在运行时指定。例如：`./nano-db -s "1234567890"`
+
+
 ### 获取cookie
 `./nano-db -c {userName}`  
 为你的用户生成cookie  
@@ -66,6 +68,9 @@ Usage of nano-db:
 
 #### 删除某Col
 `DELETE /{DB}/{COL}`
+
+#### 是否存在
+`HEAD /{DB}/{COL}/{ID}`
 
 #### 获取
 `GET /{DB}/{COL}/{ID}`
