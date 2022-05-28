@@ -40,8 +40,14 @@ func main() {
 	// Routes
 	e.HEAD("/", api.Home)
 	e.GET("/", api.Status)
-	e.GET("/:db", api.Init)
-	//e.DELETE("/:db", api.DeleteDB)
+
+	e.HEAD("/:db", api.Init)
+	e.GET("/:db", api.Cols)
+	e.DELETE("/:db", api.DeleteDB)
+
+	e.GET("/:db/:col", api.IDs)
+	e.DELETE("/:db/:col", api.DeleteCol)
+
 	e.GET("/:db/:col/:id", api.Read)
 	e.POST("/:db/:col/:id", api.Write)
 	e.DELETE("/:db/:col/:id", api.Delete)

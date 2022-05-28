@@ -13,10 +13,11 @@
 ### 获取cookie
 为你的用户生成cookie  
 `./nano-db -c {userName}`  
-然后cookie会被打印到控制台，后继需要鉴权的操作，都需要在headers内附带此cookie
+然后cookie会被打印到控制台，请在后继操作时，在headers内附带此cookie
 
 ### 数据库
 #### 查看数据库是否存活
+唯一不需要鉴权的接口
 `HEAD /`
 
 #### 查看总状态
@@ -24,8 +25,20 @@
 
 #### 初始化
 需要先初始化数据库，才能进行后继操作  
-第一个访问{DB}的用户将会成为该数据库的唯一管理员  
+第一个初始化{DB}的用户将会成为该数据库的唯一管理员  
+`HEAD /{DB}`
+
+#### 获取DB内所有Collection
 `GET /{DB}`
+
+#### 删除数据库
+`DELETE /{DB}`
+
+#### 获取指定Collection内所有ID
+`GET /{DB}/{COL}`
+
+#### 删除某Col
+`DELETE /{DB}/{COL}`
 
 #### 获取
 `GET /{DB}/{COL}/{ID}`

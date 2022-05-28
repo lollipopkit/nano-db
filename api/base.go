@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	statusFmt = "%d dirs, %d files, %d cached items in %s"
+	statusFmt = "%d dbs, %d collections, %d cached items in %s"
 )
 
 func Home(c echo.Context) error {

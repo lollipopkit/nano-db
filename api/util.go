@@ -104,3 +104,21 @@ func verifyParams(params []string) error {
 	}
 	return nil
 }
+
+func checkPermission(c echo.Context, action string) bool {
+	dbName := c.Param("db")
+	col := c.Param("col")
+	id := c.Param("id")
+
+	loggedIn, userName := accountVerify(c)
+	aclLock.RLock()
+	if !loggedIn || !acl.Can(dbName, userName) {
+		if userName != consts.AnonymousUser {
+			logger.W("[%s] user %s is trying access %s/%s/%s\n", action, userName, dbName, col, id)
+		}
+		aclLock.RUnlock()
+		return false
+	}
+	aclLock.RUnlock()
+	return true
+}

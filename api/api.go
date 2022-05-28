@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
 
 	"git.lolli.tech/LollipopKit/nano-db/consts"
@@ -13,8 +15,8 @@ import (
 )
 
 var (
-	cacher = model.NewCacher(consts.CacherMaxLength * 100)
-	acl = &model.ACL{}
+	cacher  = model.NewCacher(consts.CacherMaxLength * 100)
+	acl     = &model.ACL{}
 	aclLock = &sync.RWMutex{}
 )
 
@@ -78,18 +80,10 @@ func Read(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	loggedIn, userName := accountVerify(c)
-	aclLock.RLock()
-	if !loggedIn || !acl.Can(dbName, userName) {
-		if userName != consts.AnonymousUser {
-			logger.W("[api.Read] user %s is trying to read %s\n", userName, dbName)
-		}
-		aclLock.RUnlock()
+	if !checkPermission(c, "api.Read") {
 		return resp(c, 403, "permission denied")
 	}
-	aclLock.RUnlock()
 
-	
 	p := path(dbName, col, id)
 	if err := verifyParams([]string{dbName, col, id}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
@@ -121,16 +115,9 @@ func Write(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	loggedIn, userName := accountVerify(c)
-	aclLock.RLock()
-	if !loggedIn || !acl.Can(dbName, userName) {
-		if userName != consts.AnonymousUser {
-			logger.W("[api.Write] user %s is trying to write %s\n", userName, dbName)
-		}
-		aclLock.RUnlock()
+	if !checkPermission(c, "api.Write") {
 		return resp(c, 403, "permission denied")
 	}
-	aclLock.RUnlock()
 
 	p := path(dbName, col, id)
 	if err := verifyParams([]string{dbName, col, id}); err != nil {
@@ -145,7 +132,7 @@ func Write(c echo.Context) error {
 		return resp(c, 522, "c.Bind(): "+err.Error())
 	}
 
-	err = os.MkdirAll(consts.DBDir + dbName + "/" + col, consts.FilePermission)
+	err = os.MkdirAll(consts.DBDir+dbName+"/"+col, consts.FilePermission)
 	if err != nil {
 		logger.E("[api.Write] os.MkdirAll(): %s\n", err.Error())
 		return resp(c, 523, "os.MkdirAll(): "+err.Error())
@@ -170,16 +157,9 @@ func Delete(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	loggedIn, userName := accountVerify(c)
-	aclLock.RLock()
-	if !loggedIn || !acl.Can(dbName, userName) {
-		if userName != consts.AnonymousUser {
-			logger.W("[api.Delete] user %s is trying to delete %s/%s/%s\n", userName, dbName, col, id)
-		}
-		aclLock.RUnlock()
+	if checkPermission(c, "api.Delete") {
 		return resp(c, 403, "permission denied")
 	}
-	aclLock.RUnlock()
 
 	p := path(dbName, col, id)
 	if err := verifyParams([]string{dbName, col, id}); err != nil {
@@ -194,6 +174,119 @@ func Delete(c echo.Context) error {
 	}
 
 	cacher.Delete(p)
+
+	return resp(c, 200, "ok")
+}
+
+func IDs(c echo.Context) error {
+	dbName := c.Param("db")
+	col := c.Param("col")
+	if dbName == "" || col == "" {
+		return resp(c, 520, emptyPath)
+	}
+
+	if !checkPermission(c, "api.IDs") {
+		return resp(c, 403, "permission denied")
+	}
+
+	p := path(dbName, col, "")
+	ids, err := ioutil.ReadDir(p)
+	if err != nil {
+		logger.E("[api.IDs] ioutil.ReadDir(): %s\n", err.Error())
+		return resp(c, 526, "ioutil.ReadDir(): "+err.Error())
+	}
+
+	var idsList []string
+	for _, id := range ids {
+		if !id.IsDir() {
+			idsList = append(idsList, id.Name())
+		}
+	}
+
+	return resp(c, 200, idsList)
+}
+
+func Cols(c echo.Context) error {
+	dbName := c.Param("db")
+	if dbName == "" {
+		return resp(c, 520, emptyPath)
+	}
+
+	if !checkPermission(c, "api.Cols") {
+		return resp(c, 403, "permission denied")
+	}
+
+	cols, err := ioutil.ReadDir(consts.DBDir + dbName)
+	if err != nil {
+		logger.E("[api.Cols] ioutil.ReadDir(): %s\n", err.Error())
+		return resp(c, 527, "ioutil.ReadDir(): "+err.Error())
+	}
+
+	var colsList []string
+	for _, col := range cols {
+		if col.IsDir() {
+			colsList = append(colsList, col.Name())
+		}
+	}
+
+	return resp(c, 200, colsList)
+}
+
+func DeleteDB(c echo.Context) error {
+	dbName := c.Param("db")
+	if dbName == "" {
+		return resp(c, 520, emptyPath)
+	}
+
+	if !checkPermission(c, "api.DeleteDB") {
+		return resp(c, 403, "permission denied")
+	}
+
+	err := os.RemoveAll(consts.DBDir + dbName)
+	if err != nil {
+		logger.E("[api.DeleteDB] os.RemoveAll(): %s\n", err.Error())
+		return resp(c, 528, "os.RemoveAll(): "+err.Error())
+	}
+
+	for _, path := range cacher.All() {
+		p, ok := path.(string)
+		if !ok {
+			continue
+		}
+		if strings.HasPrefix(p, dbName+"/") {
+			cacher.Delete(path)
+		}
+	}
+
+	return resp(c, 200, "ok")
+}
+
+func DeleteCol(c echo.Context) error {
+	dbName := c.Param("db")
+	col := c.Param("col")
+	if dbName == "" || col == "" {
+		return resp(c, 520, emptyPath)
+	}
+
+	if !checkPermission(c, "api.DeleteCol") {
+		return resp(c, 403, "permission denied")
+	}
+
+	err := os.RemoveAll(consts.DBDir + dbName + "/" + col)
+	if err != nil {
+		logger.E("[api.DeleteCol] os.RemoveAll(): %s\n", err.Error())
+		return resp(c, 529, "os.RemoveAll(): "+err.Error())
+	}
+
+	for _, path := range cacher.All() {
+		p, ok := path.(string)
+		if !ok {
+			continue
+		}
+		if strings.HasPrefix(p, dbName+"/"+col+"/") {
+			cacher.Delete(path)
+		}
+	}
 
 	return resp(c, 200, "ok")
 }
