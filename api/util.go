@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"strings"
 
 	"git.lolli.tech/LollipopKit/nano-db/consts"
+	"git.lolli.tech/LollipopKit/nano-db/logger"
 	"github.com/labstack/echo"
 )
 
@@ -27,15 +27,13 @@ func accountVerify(c echo.Context) (bool, string) {
 	cookieSign, errSign := c.Cookie(consts.CookieSignKey)
 	cookieName, errName := c.Cookie(consts.CookieNameKey)
 	if errSign != nil || errName != nil {
-		return false, consts.HackUser
-	}
-	userName := decodeBase64(cookieName.Value)
-	if userName == consts.AnonymousUser {
 		return false, consts.AnonymousUser
 	}
-	if cookieSign.Value == generateCookieMd5(userName) {
+	userName, err := decodeBase64(cookieName.Value)
+	if err == nil && cookieSign.Value == generateCookieMd5(userName) {
 		return true, userName
 	}
+	logger.W("[accountVerify] new hack user [%s]", userName)
 	return false, consts.HackUser
 }
 
@@ -43,12 +41,9 @@ func encodeBase64(name string) string {
 	return base64.StdEncoding.EncodeToString([]byte(name))
 }
 
-func decodeBase64(b64 string) string {
+func decodeBase64(b64 string) (string, error) {
 	b, err := base64.StdEncoding.DecodeString(b64)
-	if err != nil {
-		log.Println(err)
-	}
-	return string(b)
+	return string(b), err
 }
 
 func hex2Str(b [16]byte) string {

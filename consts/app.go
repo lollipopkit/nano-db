@@ -4,7 +4,7 @@ const (
 	// adjust this value according to your memory size.
 	// bigger for better performance.
 	CacherMaxLength = 100
-	FilePermission  = 0744
+	FilePermission  = 0770
 
 	DBDir  = ".db/"
 	LogDir = ".log/"
@@ -20,5 +20,5 @@ const (
 	AnonymousUser = "anonymous"
 	HackUser      = "hack"
 
-	MaxIdLength = 50
+	MaxIdLength = 20
 )
