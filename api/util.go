@@ -74,6 +74,9 @@ func reverseString(s string) string {
 }
 
 func GenCookie(userName string) string {
+	if userName == consts.AnonymousUser || userName == consts.HackUser {
+		return "username cant be \"" + userName + "\", its a inner user"
+	}
 	return fmt.Sprintf("n=%s; s=%s", encodeBase64(userName), generateCookieMd5(userName))
 }
 
