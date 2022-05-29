@@ -58,7 +58,6 @@ func startWeb(addr *string) {
 	e.HEAD("/", api.Home)
 	e.GET("/", api.Status)
 
-	e.HEAD("/:db", api.Init)
 	e.GET("/:db", api.Cols)
 	e.DELETE("/:db", api.DeleteDB)
 
