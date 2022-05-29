@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
-	"git.lolli.tech/LollipopKit/nano-db/consts"
-	"git.lolli.tech/LollipopKit/nano-db/model"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/model"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -16,7 +16,7 @@ var (
 	// pathLocks : {"PATH": LOCK}
 	pathLockCacher = model.NewCacher(consts.CacherMaxLength * 100)
 	ErrLockConvert = errors.New("lock convert failed")
-	ErrNoDocument = errors.New("no document")
+	ErrNoDocument  = errors.New("no document")
 )
 
 func init() {

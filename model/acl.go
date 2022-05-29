@@ -5,18 +5,18 @@ import (
 	"io/ioutil"
 	"os"
 
-	"git.lolli.tech/LollipopKit/nano-db/consts"
-	"git.lolli.tech/LollipopKit/nano-db/utils"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/utils"
 )
 
 type ACL struct {
-	Version int `json:"ver"`
-	Rules   []ACLRule	`json:"rules"`
+	Version int       `json:"ver"`
+	Rules   []ACLRule `json:"rules"`
 }
 
 type ACLRule struct {
-	UserName string	`json:"user"`
-	DBNames []string 	`json:"db"`
+	UserName string   `json:"user"`
+	DBNames  []string `json:"db"`
 }
 
 func (acl *ACL) Save() error {
@@ -36,12 +36,12 @@ func (acl *ACL) Load() error {
 
 		acl = &ACL{
 			Version: 1,
-			Rules: []ACLRule{},
+			Rules:   []ACLRule{},
 		}
 
 		return acl.Save()
 	}
-	
+
 	data, err := ioutil.ReadFile(consts.ACLFile)
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func (acl *ACL) UpdateRule(dbName, userName string) error {
 		}
 	}
 	acl.Rules = append(acl.Rules, ACLRule{
-		DBNames: []string{dbName},
+		DBNames:  []string{dbName},
 		UserName: userName,
 	})
 	return acl.Save()

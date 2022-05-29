@@ -3,16 +3,17 @@ package main
 import (
 	"flag"
 
-	"git.lolli.tech/LollipopKit/nano-db/api"
-	"git.lolli.tech/LollipopKit/nano-db/consts"
-	"git.lolli.tech/LollipopKit/nano-db/logger"
+	"git.lolli.tech/lollipopkit/nano-db/api"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
 func main() {
-	addr := flag.String("u", "0.0.0.0:3777", "specific the addr to listen")
-	userName := flag.String("c", "", "generate the cookie with -c <username>")
+	addr := flag.String("a", "0.0.0.0:3777", "specific the addr to listen")
+	userName := flag.String("u", "", "generate the cookie with -n <username>")
+	dbName := flag.String("d", "", "update acl rules with -d <dbname>")
 	salt := flag.String("s", "", "set salt for cookie")
 	cacheLen := flag.Int("l", 100, "set the max length of cache")
 	flag.Parse()
@@ -27,15 +28,23 @@ func main() {
 
 	consts.CacherMaxLength = *cacheLen
 
-	// generate cookie
+	// generate cookie & update acl rules
 	if *userName != "" {
-		println(api.GenCookie(*userName))
+		if *dbName == "" {
+			println("[Cookie]\n ", api.GenCookie(*userName))
+		} else {
+			updateAcl(userName, dbName)
+		}
 		return
 	}
 
 	// setup logger
 	go logger.Setup()
 
+	startWeb(addr)
+}
+
+func startWeb(addr *string) {
 	// Echo instance
 	e := echo.New()
 
@@ -64,4 +73,30 @@ func main() {
 	// Start server
 	e.HideBanner = true
 	e.Logger.Fatal(e.Start(*addr))
+}
+
+func updateAcl(userName, dbName *string) {
+	print("[ACL]\n  ")
+	api.AclLock.RLock()
+	if api.Acl.HaveDB(*dbName) {
+		if !api.Acl.Can(*dbName, *userName) {
+			api.AclLock.RUnlock()
+			println("this db already initialized by other user")
+			return
+		}
+		api.AclLock.RUnlock()
+		println("you already initialized this db")
+		return
+	}
+
+	api.AclLock.RUnlock()
+	api.AclLock.Lock()
+	err := api.Acl.UpdateRule(*dbName, *userName)
+	api.AclLock.Unlock()
+
+	if err != nil {
+		println("[api.Init] acl.UpdateRule(): " + err.Error())
+	} else {
+		println("[api.Init] acl.UpdateRule(): success")
+	}
 }

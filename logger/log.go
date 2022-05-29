@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"git.lolli.tech/LollipopKit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
 )
 
 func init() {

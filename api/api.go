@@ -6,19 +6,20 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
-	"git.lolli.tech/LollipopKit/nano-db/consts"
-	"git.lolli.tech/LollipopKit/nano-db/db"
-	"git.lolli.tech/LollipopKit/nano-db/logger"
-	"git.lolli.tech/LollipopKit/nano-db/model"
-	"git.lolli.tech/LollipopKit/nano-db/utils"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/db"
+	"git.lolli.tech/lollipopkit/nano-db/logger"
+	"git.lolli.tech/lollipopkit/nano-db/model"
+	"git.lolli.tech/lollipopkit/nano-db/utils"
 	"github.com/labstack/echo"
 )
 
 var (
 	cacher  = model.NewCacher(consts.CacherMaxLength * 100)
-	acl     = &model.ACL{}
-	aclLock = &sync.RWMutex{}
+	Acl     = &model.ACL{}
+	AclLock = &sync.RWMutex{}
 )
 
 const (
@@ -27,50 +28,16 @@ const (
 )
 
 func init() {
-	aclLock.Lock()
-	err := acl.Load()
-	aclLock.Unlock()
+	go func() {
+		AclLock.Lock()
+		err := Acl.Load()
+		AclLock.Unlock()
 
-	if err != nil {
-		panic(err)
-	}
-}
-
-func Init(c echo.Context) error {
-	dbName := c.Param("db")
-	if dbName == "" {
-		return resp(c, 520, "dbName is empty")
-	}
-
-	loggedIn, userName := accountVerify(c)
-	if !loggedIn {
-		if userName != consts.AnonymousUser {
-			logger.W("[api.Init] user %s is trying to init\n", userName)
+		if err != nil {
+			panic(err)
 		}
-		return resp(c, 403, "permission denied")
-	}
-
-	aclLock.RLock()
-	if acl.HaveDB(dbName) {
-		if !acl.Can(dbName, userName) {
-			aclLock.RUnlock()
-			return resp(c, 403, "this db already initialized by other user")
-		}
-		aclLock.RUnlock()
-		return resp(c, 200, "you already initialized this db")
-	}
-
-	aclLock.RUnlock()
-	aclLock.Lock()
-	err := acl.UpdateRule(dbName, userName)
-	aclLock.Unlock()
-
-	if err != nil {
-		logger.E("[api.Init] acl.UpdateRule(): %s\n", err.Error())
-		return resp(c, 526, "acl.UpdateRule(): "+err.Error())
-	}
-
-	return resp(c, 200, "ok")
+		time.Sleep(time.Minute)
+	}()
 }
 
 func Exist(c echo.Context) error {
@@ -124,7 +91,7 @@ func Read(c echo.Context) error {
 		if err != db.ErrNoDocument {
 			logger.E("[api.Read] db.Read(): %s\n", err.Error())
 		}
-		
+
 		return resp(c, 521, "db.Read(): "+err.Error())
 	}
 

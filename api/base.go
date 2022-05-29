@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"time"
 
-	"git.lolli.tech/LollipopKit/nano-db/consts"
-	"git.lolli.tech/LollipopKit/nano-db/logger"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo"
 )
 

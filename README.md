@@ -1,29 +1,32 @@
 ## Nano DB
-一款以golang编写的轻量kv数据库。
+一款以golang编写的轻量非关系型kv数据库。  
+它解决了一个痛点：在日常使用的服务器上，常见数据库的速度会随着数据量增大而“显著”减慢。   
 
 ## 特点
+- 轻量：即使包含数十万索引，树莓派上也能流畅运行
+- 高速：微秒级查询
 - RESTful接口：不熟悉SQL语句，没问题
 - 缓存：查询结果缓存，提高查询效率
 - 权限管理：ACL，每个用户权限分离
-- 轻量：甚至可以在Raspberry Pi Zero上无压力运行
-- 高速：微秒级查询
 
 ## 使用
 ### CLI总览
 ```sh
-Usage of nano-db:
-  -c string
-        generate the cookie with -c <username>
+Usage of ./nano-db:
+  -a string
+        specific the addr to listen (default "0.0.0.0:3777")
+  -d string
+        update acl rules with -d <dbname>
   -l int
         set the max length of cache (default 100)
   -s string
         set salt for cookie
   -u string
-        specific the addr to listen (default "0.0.0.0:3777")
+        generate the cookie with -n <username>
 ```
 ### 更改salt
 两种方法：
-- 修改`consts/app.go`内`CookieSalt`的值，需要固定的值，随意填写。  
+- 随意修改`consts/app.go`内`CookieSalt`的值，需要固定的值。  
 - 使用`-s`参数在运行时指定。例如：`./nano-db -s "1234567890"`
 
 
@@ -33,17 +36,20 @@ Usage of nano-db:
 在执行该步骤前请确认是否完成了上一步（修改salt）
 然后cookie会被打印到控制台，请在后继操作时，在headers内附带此cookie
 
-### 数据库
+### 启动数据库
+`./nano-db -s {salt}`
+
+### 数据库操作
 #### 查看数据库是否存活
 `HEAD /`  
-唯一不需要鉴权的接口  
+唯一不需要附带cookie的接口，可用于客户端检查数据库是否存活  
 
 #### 查看总状态
 `GET /`
-会输出有多少数据库、COL、缓存项及获取时间
+会输出有多少数据库、COL、内存缓存项及获取时间
 
 #### 初始化
-`HEAD /{DB}`
+`./nano-db -u {userName} -d {dbName}`
 需要先初始化数据库，才能进行后继操作  
 第一个初始化{DB}的用户将会成为该数据库的唯一管理员  
 
@@ -57,13 +63,15 @@ Usage of nano-db:
 {"ver":1,"rules":[{"user":"novel","db":["novel","test"]}]}
 ```
 
-#### 获取DB内所有Collection
+⚠️**注意**，如果当前数据库正在运行，acl更改将在一分钟内应用。
+
+#### 获取DB内所有Col
 `GET /{DB}`
 
 #### 删除数据库
 `DELETE /{DB}`
 
-#### 获取指定Collection内所有ID
+#### 获取指定Col内所有ID
 `GET /{DB}/{COL}`
 
 #### 删除某Col
@@ -84,5 +92,5 @@ Usage of nano-db:
 
 
 ## 注意⚠️
-`{DB}`,`{TABLE}`,`{ID}` 不能包含字符 `/`,` `,`\\`,`..`，并且他们的长度都不能超过37.
+`{DB}`,`{COL}`,`{ID}` 不能包含字符 `/` ` ` `\\` `..`，并且他们的长度都不能超过37.
 

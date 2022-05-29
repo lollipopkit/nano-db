@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
-	"git.lolli.tech/LollipopKit/nano-db/consts"
-	"git.lolli.tech/LollipopKit/nano-db/logger"
+	"git.lolli.tech/lollipopkit/nano-db/consts"
+	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo"
 )
 
@@ -114,14 +114,14 @@ func checkPermission(c echo.Context, action string) bool {
 	id := c.Param("id")
 
 	loggedIn, userName := accountVerify(c)
-	aclLock.RLock()
-	if !loggedIn || !acl.Can(dbName, userName) {
+	AclLock.RLock()
+	if !loggedIn || !Acl.Can(dbName, userName) {
 		if userName != consts.AnonymousUser {
 			logger.W("[%s] user %s is trying access %s/%s/%s\n", action, userName, dbName, col, id)
 		}
-		aclLock.RUnlock()
+		AclLock.RUnlock()
 		return false
 	}
-	aclLock.RUnlock()
+	AclLock.RUnlock()
 	return true
 }
