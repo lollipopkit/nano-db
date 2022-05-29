@@ -29,7 +29,7 @@ func (acl *ACL) Save() error {
 
 func (acl *ACL) Load() error {
 	if !utils.IsExist(consts.ACLFile) {
-		err := os.MkdirAll(consts.ACLDir, consts.FilePermission)
+		err := os.MkdirAll(consts.SecretDir, consts.FilePermission)
 		if err != nil {
 			return err
 		}

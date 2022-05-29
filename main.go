@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
+	"math/rand"
 
 	"git.lolli.tech/lollipopkit/nano-db/api"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
+	"git.lolli.tech/lollipopkit/nano-db/utils"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -14,17 +17,10 @@ func main() {
 	addr := flag.String("a", "0.0.0.0:3777", "specific the addr to listen")
 	userName := flag.String("u", "", "generate the cookie with -n <username>")
 	dbName := flag.String("d", "", "update acl rules with -d <dbname>")
-	salt := flag.String("s", "", "set salt for cookie")
 	cacheLen := flag.Int("l", 100, "set the max length of cache")
 	flag.Parse()
 
-	if *salt != "" {
-		consts.CookieSalt = *salt
-	}
-
-	if consts.CookieSalt == "nano-db" {
-		println(consts.CookieNotChanged)
-	}
+	initSalt()
 
 	consts.CacherMaxLength = *cacheLen
 
@@ -98,4 +94,24 @@ func updateAcl(userName, dbName *string) {
 	} else {
 		println("[api.Init] acl.UpdateRule(): success")
 	}
+}
+
+func initSalt() {
+	if utils.IsExist(consts.SaltFile) {
+		salt, err := ioutil.ReadFile(consts.SaltFile)
+		if err != nil {
+			println("[initSalt] ioutil.ReadFile(): " + err.Error())
+			println("[initSalt] will use default salt")
+			return
+		}
+		consts.CookieSalt = string(salt)
+		return
+	}
+	runes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	salt := make([]rune, consts.SaltDefaultLen)
+	for i := 0; i < consts.SaltDefaultLen; i++ {
+		salt[i] = runes[rand.Intn(len(runes))]
+	}
+	ioutil.WriteFile(consts.SaltFile, []byte(string(salt)), consts.FilePermission)
+	consts.CookieSalt = string(salt)
 }
