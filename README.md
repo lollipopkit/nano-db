@@ -25,20 +25,16 @@ Usage of ./nano-db:
   -u string
         generate the cookie with -n <username>
 ```
-### 更改salt
-两种方法：
-- 随意修改`consts/app.go`内`CookieSalt`的值，需要固定的值。  
-- 使用`-s`参数在运行时指定。例如：`./nano-db -s "1234567890"`
-
 
 ### 获取cookie
 `./nano-db -c {userName}`  
 为你的用户生成cookie  
-在执行该步骤前请确认是否完成了上一步（修改salt）  
-然后cookie会被打印到控制台，请在后继操作时，在headers内附带此cookie
+cookie会被打印到控制台，请在后继操作时，在headers内附带此cookie
 
 ### 启动数据库
-`./nano-db -s {salt}`
+`./nano-db`
+可以使用`-a`参数指定监听地址，默认为`0.0.0.0:3777`  
+使用`-l`参数指定缓存的最大长度，默认为100
 
 ### 数据库操作
 #### 查看数据库是否存活
@@ -52,9 +48,9 @@ Usage of ./nano-db:
 #### 初始化
 `./nano-db -u {userName} -d {dbName}`
 需要先初始化数据库，才能进行后继操作  
-第一个初始化{DB}的用户将会成为该数据库的唯一管理员  
+第一个初始化{DB}的用户将会成为该{DB}的唯一管理员  
 
-如果你想手动管理权限，可以打开`.acl/acl.json`文件进行手动修改  
+可以打开`.acl/acl.json`文件进行手动修改  
 例如：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel"]}]}
@@ -72,14 +68,11 @@ Usage of ./nano-db:
 #### 删除数据库
 `DELETE /{DB}`
 
-#### 获取指定Col内所有ID
+#### 获取Col内所有ID
 `GET /{DB}/{COL}`
 
 #### 删除某Col
 `DELETE /{DB}/{COL}`
-
-#### 是否存在
-`HEAD /{DB}/{COL}/{ID}`
 
 #### 获取
 `GET /{DB}/{COL}/{ID}`

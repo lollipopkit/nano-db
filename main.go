@@ -60,7 +60,6 @@ func startWeb(addr *string) {
 	e.GET("/:db/:col", api.IDs)
 	e.DELETE("/:db/:col", api.DeleteCol)
 
-	e.HEAD("/:db/:col/:id", api.Exist)
 	e.GET("/:db/:col/:id", api.Read)
 	e.POST("/:db/:col/:id", api.Write)
 	e.DELETE("/:db/:col/:id", api.Delete)

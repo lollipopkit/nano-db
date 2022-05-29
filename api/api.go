@@ -12,7 +12,6 @@ import (
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"git.lolli.tech/lollipopkit/nano-db/model"
-	"git.lolli.tech/lollipopkit/nano-db/utils"
 	"github.com/labstack/echo"
 )
 
@@ -38,28 +37,6 @@ func init() {
 		}
 		time.Sleep(time.Minute)
 	}()
-}
-
-func Exist(c echo.Context) error {
-	dbName := c.Param("db")
-	col := c.Param("col")
-	id := c.Param("id")
-	if dbName == "" || col == "" || id == "" {
-		return resp(c, 520, emptyPath)
-	}
-
-	if !checkPermission(c, "api.Exist") {
-		return resp(c, 403, "permission denied")
-	}
-
-	p := path(dbName, col, id)
-	if err := verifyParams([]string{dbName, col, id}); err != nil {
-		logger.W("[api.Exist] %s is not valid: %s\n", p, err.Error())
-		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
-	}
-
-	exist := utils.IsExist(p)
-	return resp(c, 200, exist)
 }
 
 func Read(c echo.Context) error {
