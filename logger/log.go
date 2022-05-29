@@ -31,7 +31,7 @@ func E(format string, args ...interface{}) {
 func Setup() {
 	for {
 		file := consts.LogDir + time.Now().Format("2006-01-02") + ".txt"
-		logFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0744)
+		logFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_APPEND, consts.FilePermission)
 		if err != nil {
 			panic(err)
 		}
