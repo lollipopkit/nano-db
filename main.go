@@ -75,11 +75,11 @@ func updateAcl(userName, dbName *string) {
 	if api.Acl.HaveDB(*dbName) {
 		if !api.Acl.Can(*dbName, *userName) {
 			api.AclLock.RUnlock()
-			println("this db already initialized by other user")
+			println("this db already owned by other user")
 			return
 		}
 		api.AclLock.RUnlock()
-		println("you already initialized this db")
+		println("you already owned this db")
 		return
 	}
 
@@ -89,9 +89,9 @@ func updateAcl(userName, dbName *string) {
 	api.AclLock.Unlock()
 
 	if err != nil {
-		println("[api.Init] acl.UpdateRule(): " + err.Error())
+		println("acl update rule: " + err.Error())
 	} else {
-		println("[api.Init] acl.UpdateRule(): success")
+		println("acl update rule: success")
 	}
 }
 

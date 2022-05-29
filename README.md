@@ -1,17 +1,18 @@
 ## Nano DB
-一款以golang编写的轻量、非关系型、基于系统文件系统的kv数据库。  
-说白了就是把数据按文件存在本地，再提供http接口来访问，因此可以适用于分布式服务。  
-在日常使用的服务器上，不会如同常见数据库：速度会随着数据量增大而“显著”减慢。   
+一款以golang编写的轻量、非关系型、基于文件系统的kv数据库。  
+
+白话文：将数据按文件储存，再提供http接口来访问，因此可以适用于分布式服务（一台数据库服务器，多个后端服务器）。  
+
 
 ## 特点
 - 轻量：即使包含数十万索引，树莓派上也能流畅运行
 - 高速：微秒级查询
-- RESTful接口：不熟悉SQL语句，没问题
+- RESTful接口：无需SQL语句（目前：意味着没有where、order by等）
 - 缓存：查询结果缓存，提高查询效率
 - 权限管理：ACL，每个用户权限分离
+- SDK：目前支持 [go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)
 
 ## 使用
-### CLI总览
 ```sh
 Usage of ./nano-db:
   -a string
@@ -26,32 +27,23 @@ Usage of ./nano-db:
         generate the cookie with -n <username>
 ```
 
-### 获取cookie
-`./nano-db -c {userName}`  
-为你的用户生成cookie  
-cookie会被打印到控制台，请在后继操作时，在headers内附带此cookie
-
-### 启动数据库
+#### 启动数据库
 `./nano-db`
 可以使用`-a`参数指定监听地址，默认为`0.0.0.0:3777`  
 使用`-l`参数指定缓存的最大长度，默认为100
 
-### 数据库操作
-#### 查看数据库是否存活
-`HEAD /`  
-唯一不需要附带cookie的接口，可用于客户端检查数据库是否存活  
+#### 获取cookie
+`./nano-db -c {userName}`  
 
-#### 查看总状态
-`GET /`
-会输出有多少数据库、COL、内存缓存项及获取时间
+为你的用户生成cookie，cookie会被打印到控制台  
+⚠️ **请在使用http接口时，在headers内附带此cookie。或以此cookie使用sdk**
 
-#### 初始化
-`./nano-db -u {userName} -d {dbName}`
-需要先初始化数据库，才能进行后继操作  
-第一个初始化{DB}的用户将会成为该{DB}的唯一管理员  
+#### 添加权限
+`./nano-db -d {dbName} -u {userName}`   
 
-可以打开`.acl/acl.json`文件进行手动修改  
-例如：
+指定用户成为指定数据库的唯一管理员  
+
+可以打开`.sct/acl.json`（如文件不存在，需要先启动数据库一次）文件进行手动修改，例如：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel"]}]}
 ```
@@ -62,29 +54,25 @@ cookie会被打印到控制台，请在后继操作时，在headers内附带此c
 
 ⚠️**注意**，如果当前数据库正在运行，acl更改将在一分钟内应用。
 
-#### 获取DB内所有Col
-`GET /{DB}`
 
-#### 删除数据库
-`DELETE /{DB}`
+### 数据库操作
+操作数据库可以选择：
+- SDK（[go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)，其他sdk待开发）
+- HTTP接口
 
-#### 获取Col内所有ID
-`GET /{DB}/{COL}`
-
-#### 删除某Col
-`DELETE /{DB}/{COL}`
-
-#### 获取
-`GET /{DB}/{COL}/{ID}`
-
-#### 插入/更新
-`POST /{DB}/{COL}/{ID}`
-需要在body附带需要写入的数据
-
-#### 删除
-`DELETE /{DB}/{COL}/{ID}`
+接下来是http接口的使用，sdk文档请前往sdk查看。
 
 
-## 注意⚠️
-`{DB}`,`{COL}`,`{ID}` 不能包含字符 `/` ` ` `\\` `..`，并且他们的长度都不能超过37.
+方法|接口|功能|额外说明
+---|---|---|---
+HEAD|`/`|查看数据库是否存活|唯一不需要附带cookie的接口，可用于客户端检查数据库是否存活
+GET|`/`|查看总状态|会输出有多少数据库、COL、内存缓存项及获取时间
+GET|`/{DB}`|获取DB内所有Col|会返回所有col的名称，并非db内所有col的数据
+DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
+GET|`/{DB}/{COL}`|获取Col内所有ID|获取col下所有id的名称，并非col下所有数据
+DELETE|`/{DB}/{COL}`|删除某Col|并且删除col下所有ID
+GET|`/{DB}/{COL}/{ID}`|获取|不存在则会返回错误
+POST|`/{DB}/{COL}/{ID}`|插入/更新|需要在body附带需要写入的数据
+DELETE|`/{DB}/{COL}/{ID}`|删除|如果路径不存在则会返回错误
+⚠️**注意**：`{DB}`,`{COL}`,`{ID}` 不能包含字符 `/` ` ` `\` `..`，并且他们的长度都不能超过37。
 
