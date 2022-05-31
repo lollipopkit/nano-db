@@ -57,12 +57,12 @@ func startWeb(addr *string) {
 	e.GET("/:db", api.Cols)
 	e.DELETE("/:db", api.DeleteDB)
 
-	e.GET("/:db/:col", api.IDs)
+	e.GET("/:db/:col", api.Files)
 	e.DELETE("/:db/:col", api.DeleteCol)
 
-	e.GET("/:db/:col/:id", api.Read)
-	e.POST("/:db/:col/:id", api.Write)
-	e.DELETE("/:db/:col/:id", api.Delete)
+	e.GET("/:db/:col/:file", api.Read)
+	e.POST("/:db/:col/:file", api.Write)
+	e.DELETE("/:db/:col/:file", api.Delete)
 
 	// Start server
 	e.HideBanner = true

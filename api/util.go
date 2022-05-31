@@ -20,6 +20,14 @@ func resp(c echo.Context, code int, data interface{}) error {
 	})
 }
 
+func ok(c echo.Context) error {
+	return resp(c, 200, "ok")
+}
+
+func permissionDenied(c echo.Context) error {
+	return resp(c, 403, "permission denied")
+}
+
 func path(db, col, id string) string {
 	return fmt.Sprintf(pathFmt, db, col, id)
 }

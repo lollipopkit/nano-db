@@ -15,7 +15,7 @@ const (
 )
 
 func Home(c echo.Context) error {
-	return resp(c, 200, "db alive")
+	return c.NoContent(200)
 }
 
 func Status(c echo.Context) error {
@@ -24,7 +24,7 @@ func Status(c echo.Context) error {
 		if userName != consts.AnonymousUser {
 			logger.W("[api.Status] user %s is trying to get\n", userName)
 		}
-		return resp(c, 403, "permission denied")
+		return permissionDenied(c)
 	}
 
 	time1 := time.Now()
