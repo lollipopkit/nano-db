@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"math/rand"
+	"strings"
 
 	"git.lolli.tech/lollipopkit/nano-db/api"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
@@ -103,7 +104,7 @@ func initSalt() {
 			println("[initSalt] will use default salt")
 			return
 		}
-		consts.CookieSalt = string(salt)
+		consts.CookieSalt = strings.Trim(string(salt), "\n")
 		return
 	}
 	runes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")

@@ -119,14 +119,12 @@ func verifyParams(params []string) error {
 func checkPermission(c echo.Context, action string) bool {
 	dbName := c.Param("db")
 	col := c.Param("col")
-	id := c.Param("id")
+	file := c.Param("file")
 
 	loggedIn, userName := accountVerify(c)
 	AclLock.RLock()
 	if !loggedIn || !Acl.Can(dbName, userName) {
-		if userName != consts.AnonymousUser {
-			logger.W("[%s] user %s is trying access %s/%s/%s\n", action, userName, dbName, col, id)
-		}
+		logger.W("[%s] user %s is trying access %s %s %s\n", action, userName, dbName, col, file)
 		AclLock.RUnlock()
 		return false
 	}

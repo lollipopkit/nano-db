@@ -14,7 +14,7 @@ import (
 var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 	// pathLocks : {"PATH": LOCK}
-	pathLockCacher = model.NewCacher(consts.CacherMaxLength * 100)
+	pathLockCacher = model.NewCacher(consts.CacherMaxLength)
 	ErrLockConvert = errors.New("lock convert failed")
 	ErrNoDocument  = errors.New("no document")
 )
