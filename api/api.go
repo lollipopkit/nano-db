@@ -159,7 +159,7 @@ func Files(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, col, "")
+	p := consts.DBDir + path(dbName, col, "")
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		logger.E("[api.IDs] ioutil.ReadDir(): %s\n", err.Error())
