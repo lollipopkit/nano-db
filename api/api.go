@@ -86,7 +86,7 @@ func Write(c echo.Context) error {
 	}
 
 	if !checkPermission(c, "api.Write") {
-		return resp(c, 403, "permission denied")
+		return permissionDenied(c)
 	}
 
 	p := path(dbName, col, file)
@@ -127,7 +127,7 @@ func Delete(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	if checkPermission(c, "api.Delete") {
+	if !checkPermission(c, "api.Delete") {
 		return permissionDenied(c)
 	}
 
