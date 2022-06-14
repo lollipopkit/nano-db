@@ -52,7 +52,7 @@ func startWeb(addr *string) {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.HEAD("/", api.Home)
+	e.HEAD("/", api.Alive)
 	e.GET("/", api.Status)
 
 	e.GET("/:db", api.Cols)
@@ -80,7 +80,7 @@ func updateAcl(userName, dbName *string) {
 			return
 		}
 		api.AclLock.RUnlock()
-		println("you already owned this db")
+		println(*userName + " already owned this db")
 		return
 	}
 

@@ -14,7 +14,7 @@ const (
 	statusFmt = "%d dbs, %d collections, %d cached items in %s"
 )
 
-func Home(c echo.Context) error {
+func Alive(c echo.Context) error {
 	return c.NoContent(200)
 }
 

@@ -4,7 +4,7 @@
 白话文：将数据按文件储存，再提供http接口来访问，因此可以适用于分布式服务（一台数据库服务器，多个后端服务器）。  
 
 
-## 特点
+## 🔖 特点
 - 轻量：即使包含数十万索引，树莓派上也能流畅运行
 - 高速：微秒级查询
 - RESTful接口：无需SQL语句（目前：意味着没有where、order by等）
@@ -12,7 +12,7 @@
 - 权限管理：ACL，每个用户权限分离
 - SDK：目前支持 [go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)
 
-## 使用
+## 📖 使用
 ```sh
 Usage of ./nano-db:
   -a string
@@ -21,21 +21,20 @@ Usage of ./nano-db:
         update acl rules with -d <dbname>
   -l int
         set the max length of cache (default 100)
-  -s string
-        set salt for cookie
   -u string
         generate the cookie with -n <username>
 ```
 
 #### 启动数据库
 `./nano-db`
-可以使用`-a`参数指定监听地址，默认为`0.0.0.0:3777`  
-使用`-l`参数指定缓存的最大长度，默认为100
+可选`-a`参数指定监听地址，默认为`0.0.0.0:3777`  
+可选`-l`参数指定缓存的最大长度，默认为100
 
 #### 获取cookie
-`./nano-db -c {userName}`  
+`./nano-db -u {userName}`  
 
 为你的用户生成cookie，cookie会被打印到控制台  
+
 ⚠️ **请在使用http接口时，在headers内附带此cookie。或以此cookie使用sdk**
 
 #### 添加权限
@@ -43,11 +42,11 @@ Usage of ./nano-db:
 
 指定用户成为指定数据库的唯一管理员  
 
-可以打开`.sct/acl.json`（如文件不存在，需要先启动数据库一次）文件进行手动修改，例如：
+可以打开`.sct/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel"]}]}
 ```
-你想给用户`novel`添加访问数据库`test`的权限，可以如下修改：
+如果想给用户`novel`添加`test`数据库的权限，可以如下修改：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel","test"]}]}
 ```
@@ -55,7 +54,7 @@ Usage of ./nano-db:
 ⚠️**注意**，如果当前数据库正在运行，acl更改将在一分钟内应用。
 
 
-### 数据库操作
+### 🔨 数据库操作
 操作数据库可以选择：
 - SDK（[go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)，其他sdk待开发）
 - HTTP接口
@@ -76,3 +75,12 @@ POST|`/{DB}/{COL}/{FILE}`|插入/更新|需要在body附带需要写入的数据
 DELETE|`/{DB}/{COL}/{FILE}`|删除|如果路径不存在则会返回错误
 ⚠️**注意**：`{DB}`,`{COL}`,`{FILE}` 不能包含字符 `/` ` ` `\` `..`，并且他们的长度都不能超过37。
 
+建议规范：`novel/chapter/1.json` `xapp/user/xxx.json` `secret/key/xxx.json`
+
+## 🔒 安全
+请妥善保管你的cookie，不要将其发送给他人。  
+如果发现cookie被盗，请更改`.sct/salt.txt`的内容。  
+随后重新生成cookie，并使用新的cookie访问数据库。
+
+## 🔑 License
+`LGPL LollipopKit 2022`
