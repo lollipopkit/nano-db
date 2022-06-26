@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	git.lolli.tech/lollipopkit/go_lru_cacher v0.0.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/gommon v0.3.1 // indirect

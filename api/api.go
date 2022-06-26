@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	gc "git.lolli.tech/lollipopkit/go_lru_cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
@@ -16,7 +17,7 @@ import (
 )
 
 var (
-	cacher  = model.NewCacher(consts.CacherMaxLength * 100)
+	cacher  = gc.NewCacher(consts.CacherMaxLength * 100)
 	Acl     = &model.ACL{}
 	AclLock = &sync.RWMutex{}
 )

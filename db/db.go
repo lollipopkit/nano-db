@@ -6,15 +6,15 @@ import (
 	"os"
 	"sync"
 
+	gc "git.lolli.tech/lollipopkit/go_lru_cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
-	"git.lolli.tech/lollipopkit/nano-db/model"
 	jsoniter "github.com/json-iterator/go"
 )
 
 var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 	// pathLocks : {"PATH": LOCK}
-	pathLockCacher = model.NewCacher(consts.CacherMaxLength)
+	pathLockCacher = gc.NewCacher(consts.CacherMaxLength)
 	ErrLockConvert = errors.New("lock convert failed")
 	ErrNoDocument  = errors.New("no document")
 )
