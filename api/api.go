@@ -13,7 +13,7 @@ import (
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"git.lolli.tech/lollipopkit/nano-db/model"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 var (

@@ -10,7 +10,7 @@ import (
 
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 func resp(c echo.Context, code int, data interface{}) error {

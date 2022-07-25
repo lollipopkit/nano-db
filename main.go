@@ -10,8 +10,8 @@ import (
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"git.lolli.tech/lollipopkit/nano-db/utils"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -38,10 +38,10 @@ func main() {
 	// setup logger
 	go logger.Setup()
 
-	startWeb(addr)
+	startHttp(addr)
 }
 
-func startWeb(addr *string) {
+func startHttp(addr *string) {
 	// Echo instance
 	e := echo.New()
 
