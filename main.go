@@ -55,15 +55,15 @@ func startWeb(addr *string) {
 	e.HEAD("/", api.Alive)
 	e.GET("/", api.Status)
 
-	e.GET("/:db", api.Cols)
+	e.GET("/:db", api.Dirs)
 	e.DELETE("/:db", api.DeleteDB)
 
-	e.GET("/:db/:col", api.Files)
-	e.DELETE("/:db/:col", api.DeleteCol)
+	e.GET("/:db/:dir", api.Files)
+	e.DELETE("/:db/:dir", api.DeleteCol)
 
-	e.GET("/:db/:col/:file", api.Read)
-	e.POST("/:db/:col/:file", api.Write)
-	e.DELETE("/:db/:col/:file", api.Delete)
+	e.GET("/:db/:dir/:file", api.Read)
+	e.POST("/:db/:dir/:file", api.Write)
+	e.DELETE("/:db/:dir/:file", api.Delete)
 
 	// Start server
 	e.HideBanner = true

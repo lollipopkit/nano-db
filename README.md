@@ -65,15 +65,15 @@ Usage of ./nano-db:
 方法|接口|功能|额外说明
 ---|---|---|---
 HEAD|`/`|查看数据库是否存活|唯一不需要附带cookie的接口，可用于客户端检查数据库是否存活
-GET|`/`|查看总状态|会输出有多少数据库、COL、内存缓存项及获取时间
-GET|`/{DB}`|获取DB内所有Col|会返回所有col的名称，并非db内所有col的数据
+GET|`/`|查看总状态|会输出有多少数据库、DIR、内存缓存项及获取时间
+GET|`/{DB}`|获取DB内所有Col|会返回所有dir的名称，并非db内所有dir的数据
 DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
-GET|`/{DB}/{COL}`|获取Col内所有FILE|获取col下所有文件的名称，并非col下所有数据
-DELETE|`/{DB}/{COL}`|删除某Col|并且删除col下所有FILE
-GET|`/{DB}/{COL}/{FILE}`|获取|不存在则会返回错误
-POST|`/{DB}/{COL}/{FILE}`|插入/更新|需要在body附带需要写入的数据
-DELETE|`/{DB}/{COL}/{FILE}`|删除|如果路径不存在则会返回错误
-⚠️**注意**：`{DB}`,`{COL}`,`{FILE}` 不能包含字符 `/` ` ` `\` `..`，并且他们的长度都不能超过37。
+GET|`/{DB}/{DIR}`|获取Col内所有FILE|获取dir下所有文件的名称，并非dir下所有数据
+DELETE|`/{DB}/{DIR}`|删除某Col|并且删除dir下所有FILE
+GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
+POST|`/{DB}/{DIR}/{FILE}`|插入/更新|需要在body附带需要写入的数据
+DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
+⚠️**注意**：`{DB}`,`{DIR}`,`{FILE}` 不能包含字符 `/` ` ` `\` `..`，并且他们的长度都不能超过37。
 
 建议规范：`novel/chapter/1.json` `xapp/user/xxx.json` `secret/key/xxx.json`
 

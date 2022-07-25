@@ -27,7 +27,7 @@ var (
 
 const (
 	pathFmt   = "%s/%s/%s"
-	emptyPath = "[db] or [col] or [file] is empty"
+	emptyPath = "[db] or [dir] or [file] is empty"
 )
 
 func init() {
@@ -64,9 +64,9 @@ func Read(c echo.Context) error {
 	}
 
 	dbName := c.Param("db")
-	col := c.Param("col")
+	dir := c.Param("dir")
 	file := c.Param("file")
-	if dbName == "" || col == "" || file == "" {
+	if dbName == "" || dir == "" || file == "" {
 		return resp(c, 520, emptyPath)
 	}
 
@@ -75,8 +75,8 @@ func Read(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, col, file)
-	if err := verifyParams([]string{dbName, col, file}); err != nil {
+	p := path(dbName, dir, file)
+	if err := verifyParams([]string{dbName, dir, file}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
@@ -108,9 +108,9 @@ func Write(c echo.Context) error {
 	}
 
 	dbName := c.Param("db")
-	col := c.Param("col")
+	dir := c.Param("dir")
 	file := c.Param("file")
-	if dbName == "" || col == "" || file == "" {
+	if dbName == "" || dir == "" || file == "" {
 		return resp(c, 520, emptyPath)
 	}
 
@@ -119,8 +119,8 @@ func Write(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, col, file)
-	if err := verifyParams([]string{dbName, col, file}); err != nil {
+	p := path(dbName, dir, file)
+	if err := verifyParams([]string{dbName, dir, file}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
@@ -132,7 +132,7 @@ func Write(c echo.Context) error {
 		return resp(c, 522, "c.Bind(): "+err.Error())
 	}
 
-	err = os.MkdirAll(consts.DBDir+dbName+"/"+col, consts.FilePermission)
+	err = os.MkdirAll(consts.DBDir+dbName+"/"+dir, consts.FilePermission)
 	if err != nil {
 		logger.E("[api.Write] os.MkdirAll(): %s\n", err.Error())
 		return resp(c, 523, "os.MkdirAll(): "+err.Error())
@@ -156,9 +156,9 @@ func Delete(c echo.Context) error {
 	}
 
 	dbName := c.Param("db")
-	col := c.Param("col")
+	dir := c.Param("dir")
 	file := c.Param("file")
-	if dbName == "" || col == "" || file == "" {
+	if dbName == "" || dir == "" || file == "" {
 		return resp(c, 520, emptyPath)
 	}
 
@@ -167,8 +167,8 @@ func Delete(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, col, file)
-	if err := verifyParams([]string{dbName, col, file}); err != nil {
+	p := path(dbName, dir, file)
+	if err := verifyParams([]string{dbName, dir, file}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
@@ -191,8 +191,8 @@ func Files(c echo.Context) error {
 	}
 
 	dbName := c.Param("db")
-	col := c.Param("col")
-	if dbName == "" || col == "" {
+	dir := c.Param("dir")
+	if dbName == "" || dir == "" {
 		return resp(c, 520, emptyPath)
 	}
 
@@ -201,7 +201,7 @@ func Files(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	p := consts.DBDir + path(dbName, col, "")
+	p := consts.DBDir + path(dbName, dir, "")
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		logger.E("[api.IDs] ioutil.ReadDir(): %s\n", err.Error())
@@ -218,7 +218,7 @@ func Files(c echo.Context) error {
 	return resp(c, 200, filesList)
 }
 
-func Cols(c echo.Context) error {
+func Dirs(c echo.Context) error {
 	banTimes, err := checkIP(c)
 	if err != nil {
 		return err
@@ -229,25 +229,25 @@ func Cols(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Cols") {
+	if !checkPermission(c, "api.Dirs") {
 		banIP.Set(c.RealIP(), banTimes+1)
 		return permissionDenied(c)
 	}
 
-	cols, err := ioutil.ReadDir(consts.DBDir + dbName)
+	dirs, err := ioutil.ReadDir(consts.DBDir + dbName)
 	if err != nil {
-		logger.E("[api.Cols] ioutil.ReadDir(): %s\n", err.Error())
+		logger.E("[api.Dirs] ioutil.ReadDir(): %s\n", err.Error())
 		return resp(c, 527, "ioutil.ReadDir(): "+err.Error())
 	}
 
-	var colsList []string
-	for _, col := range cols {
-		if col.IsDir() {
-			colsList = append(colsList, col.Name())
+	var dirsList []string
+	for _, dir := range dirs {
+		if dir.IsDir() {
+			dirsList = append(dirsList, dir.Name())
 		}
 	}
 
-	return resp(c, 200, colsList)
+	return resp(c, 200, dirsList)
 }
 
 func DeleteDB(c echo.Context) error {
@@ -292,8 +292,8 @@ func DeleteCol(c echo.Context) error {
 	}
 
 	dbName := c.Param("db")
-	col := c.Param("col")
-	if dbName == "" || col == "" {
+	dir := c.Param("dir")
+	if dbName == "" || dir == "" {
 		return resp(c, 520, emptyPath)
 	}
 
@@ -302,7 +302,7 @@ func DeleteCol(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	err = os.RemoveAll(consts.DBDir + dbName + "/" + col)
+	err = os.RemoveAll(consts.DBDir + dbName + "/" + dir)
 	if err != nil {
 		logger.E("[api.DeleteCol] os.RemoveAll(): %s\n", err.Error())
 		return resp(c, 529, "os.RemoveAll(): "+err.Error())
@@ -313,7 +313,7 @@ func DeleteCol(c echo.Context) error {
 		if !ok {
 			continue
 		}
-		if strings.HasPrefix(p, dbName+"/"+col+"/") {
+		if strings.HasPrefix(p, dbName+"/"+dir+"/") {
 			cacher.Delete(path)
 		}
 	}
