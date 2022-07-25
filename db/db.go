@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	gc "git.lolli.tech/lollipopkit/go_lru_cacher"
+	glc "git.lolli.tech/lollipopkit/go_lru_cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -14,7 +14,7 @@ import (
 var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 	// pathLocks : {"PATH": LOCK}
-	pathLockCacher = gc.NewCacher(consts.CacherMaxLength)
+	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
 	ErrLockConvert = errors.New("lock convert failed")
 	ErrNoDocument  = errors.New("no document")
 )
@@ -30,7 +30,7 @@ func getLock(path string) (*sync.RWMutex, error) {
 
 	if !have {
 		lock := sync.RWMutex{}
-		pathLockCacher.Update(path, &lock)
+		pathLockCacher.Set(path, &lock)
 		return &lock, nil
 	}
 	a, ok := l.(*sync.RWMutex)

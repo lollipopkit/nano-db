@@ -16,7 +16,7 @@ import (
 
 func main() {
 	addr := flag.String("a", "0.0.0.0:3777", "specific the addr to listen")
-	userName := flag.String("u", "", "generate the cookie with -n <username>")
+	userName := flag.String("u", "", "generate the cookie with -u <username>")
 	dbName := flag.String("d", "", "update acl rules with -d <dbname>")
 	cacheLen := flag.Int("l", 100, "set the max length of cache")
 	flag.Parse()

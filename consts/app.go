@@ -9,15 +9,17 @@ const (
 	ACLFile   = SecretDir + "acl.json"
 	SaltFile  = SecretDir + "salt.txt"
 
-	CookieSalt2      = "20001110"
-	CookieSignKey    = "s"
-	CookieNameKey    = "n"
+	CookieSalt2   = "20001110"
+	CookieSignKey = "s"
+	CookieNameKey = "n"
 
 	AnonymousUser = "anonymous"
 	HackUser      = "hack"
 
-	MaxIdLength = 37
+	MaxIdLength    = 37
 	SaltDefaultLen = 17
+
+	MaxIPFailedTimes = 37
 )
 
 var (

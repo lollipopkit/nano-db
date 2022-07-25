@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"log"
 	"os"
 	"time"
@@ -35,7 +36,8 @@ func Setup() {
 		if err != nil {
 			panic(err)
 		}
-		log.SetOutput(logFile)
+		multiWriter := io.MultiWriter(os.Stdout, logFile)
+   		log.SetOutput(multiWriter)
 		time.Sleep(time.Hour)
 	}
 }
