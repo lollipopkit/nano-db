@@ -8,7 +8,6 @@ import (
 
 	"git.lolli.tech/lollipopkit/nano-db/api"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
-	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"git.lolli.tech/lollipopkit/nano-db/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -34,9 +33,6 @@ func main() {
 		}
 		return
 	}
-
-	// setup logger
-	go logger.Setup()
 
 	startHttp(addr)
 }

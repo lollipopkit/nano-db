@@ -13,6 +13,7 @@ func init() {
 	if err := os.MkdirAll(consts.LogDir, consts.FilePermission); err != nil {
 		panic(err)
 	}
+	go setup()
 }
 
 func W(format string, args ...interface{}) {
@@ -28,8 +29,8 @@ func E(format string, args ...interface{}) {
 }
 
 // Must call this func using:
-// `go logger.Setup()`
-func Setup() {
+// `go setup()`
+func setup() {
 	for {
 		file := consts.LogDir + time.Now().Format("2006-01-02") + ".txt"
 		logFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_APPEND, consts.FilePermission)
@@ -37,7 +38,7 @@ func Setup() {
 			panic(err)
 		}
 		multiWriter := io.MultiWriter(os.Stdout, logFile)
-   		log.SetOutput(multiWriter)
+		log.SetOutput(multiWriter)
 		time.Sleep(time.Hour)
 	}
 }

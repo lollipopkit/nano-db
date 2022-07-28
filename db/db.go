@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
+	"time"
 
 	glc "git.lolli.tech/lollipopkit/go_lru_cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
@@ -13,8 +14,11 @@ import (
 
 var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
-	// pathLocks : {"PATH": LOCK}
-	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
+
+	pathLockLength = consts.CacherMaxLength
+	// map[string]*sync.RWMutex : {"PATH": LOCK}
+	pathLockCacher = glc.NewCacher(pathLockLength)
+
 	ErrLockConvert = errors.New("lock convert failed")
 	ErrNoDocument  = errors.New("no document")
 )
@@ -27,12 +31,21 @@ func init() {
 
 func getLock(path string) (*sync.RWMutex, error) {
 	l, have := pathLockCacher.Get(path)
-
 	if !have {
-		lock := sync.RWMutex{}
-		pathLockCacher.Set(path, &lock)
-		return &lock, nil
+		// 防止pathLockCacher因为超出最大长度，而清理可能正在使用的锁
+		// 例如：有超过pathLockLength个的进程同时读写
+		for {
+			if pathLockCacher.Len() < pathLockLength {
+				break
+			}
+			time.Sleep(time.Millisecond * 100)
+		}
+
+		lock := new(sync.RWMutex)
+		pathLockCacher.Set(path, lock)
+		return lock, nil
 	}
+
 	a, ok := l.(*sync.RWMutex)
 	if ok {
 		return a, nil
@@ -44,7 +57,10 @@ func Read(path string, model interface{}) error {
 	return wrapLock(path, func() error {
 		data, err := ioutil.ReadFile(consts.DBDir + path)
 		if err != nil {
-			return ErrNoDocument
+			if errors.Is(err, os.ErrNotExist) {
+				return ErrNoDocument
+			}
+			return err
 		}
 		return json.Unmarshal(data, &model)
 	}, false)
@@ -63,7 +79,7 @@ func Write(path string, model interface{}) error {
 func Delete(path string) error {
 	return wrapLock(path, func() error {
 		return os.Remove(consts.DBDir + path)
-	}, false)
+	}, true)
 }
 
 func wrapLock(path string, fun func() error, write bool) error {
@@ -71,16 +87,21 @@ func wrapLock(path string, fun func() error, write bool) error {
 	if err != nil {
 		return err
 	}
+
 	if write {
 		lock.Lock()
 	} else {
 		lock.RLock()
 	}
+
 	err = fun()
+
 	if write {
 		lock.Unlock()
 	} else {
 		lock.RUnlock()
 	}
+
+	pathLockCacher.Delete(path)
 	return err
 }
