@@ -20,7 +20,6 @@ var (
 	pathLockCacher = glc.NewCacher(pathLockLength)
 
 	ErrLockConvert = errors.New("lock convert failed")
-	ErrNoDocument  = errors.New("no document")
 )
 
 func init() {
@@ -57,9 +56,6 @@ func Read(path string, model interface{}) error {
 	return wrapLock(path, func() error {
 		data, err := ioutil.ReadFile(consts.DBDir + path)
 		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				return ErrNoDocument
-			}
 			return err
 		}
 		return json.Unmarshal(data, &model)

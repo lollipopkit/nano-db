@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -89,7 +90,7 @@ func Read(c echo.Context) error {
 	var content interface{}
 	err = db.Read(p, &content)
 	if err != nil {
-		if err != db.ErrNoDocument {
+		if !errors.Is(err, os.ErrNotExist) {
 			logger.E("[api.Read] db.Read(): %s\n", err.Error())
 		}
 
@@ -175,7 +176,9 @@ func Delete(c echo.Context) error {
 
 	err = db.Delete(p)
 	if err != nil {
-		logger.E("[api.Delete] db.Delete(): %s\n", err.Error())
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.E("[api.Delete] db.Delete(): %s\n", err.Error())
+		}
 		return resp(c, 524, "db.Delete(): "+err.Error())
 	}
 
