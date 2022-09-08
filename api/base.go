@@ -35,9 +35,14 @@ func Status(c echo.Context) error {
 	}
 
 	dirNames := make([]string, 0, len(dirs))
-	for _, dir := range dirs {
-		if dir.IsDir() {
-			dirNames = append(dirNames, dir.Name())
+	for _, d := range dirs {
+		dbName := d.Name()
+		if !d.IsDir() {
+			logger.W("[api.Status] %s is not a dir\n", dbName)
+			continue
+		}
+		if Acl.Can(dbName, userName) {
+			dirNames = append(dirNames, dbName)
 		}
 	}
 

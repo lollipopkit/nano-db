@@ -5,9 +5,10 @@
 
 
 ## 🔖 特点
+- 无需SQL语句：使用gjson搜索代替where语句
 - 轻量：即使包含数十万索引，树莓派上也能流畅运行
 - 高速：微秒级查询
-- RESTful接口：无需SQL语句（目前：意味着没有where、order by等）
+- RESTful接口：HTTP协议，方便使用
 - 缓存：查询结果缓存，提高查询效率
 - 权限管理：ACL，每个用户权限分离
 - SDK：目前支持 [go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)
@@ -70,6 +71,7 @@ GET|`/{DB}`|获取DB内所有Col|会返回所有dir的名称，并非db内所有
 DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
 GET|`/{DB}/{DIR}`|获取Col内所有FILE|获取dir下所有文件的名称，并非dir下所有数据
 DELETE|`/{DB}/{DIR}`|删除某Col|并且删除dir下所有FILE
+POST|`/{DB}/{DIR}?path={p}&value={v}`|搜索|会搜索dir下所有文件，返回包含`gjson.Get(FILE,p).Exists()`为true的文件。如果正则`v`不为空，则会返回`gjson.Result.Raw`匹配的文件。
 GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
 POST|`/{DB}/{DIR}/{FILE}`|插入/更新|需要在body附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -14,10 +15,14 @@ import (
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"git.lolli.tech/lollipopkit/nano-db/model"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/labstack/echo/v4"
+	"github.com/tidwall/gjson"
 )
 
 var (
+	json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	cacher = glc.NewCacher(consts.CacherMaxLength * 100)
 	// record ip's failed times: map[string]int -> {"ip": times}
 	banIP = glc.NewCacher(consts.CacherMaxLength)
@@ -27,8 +32,9 @@ var (
 )
 
 const (
-	pathFmt   = "%s/%s/%s"
-	emptyPath = "[db] or [dir] or [file] is empty"
+	pathFmt         = "%s/%s/%s"
+	emptyPath       = "[db] or [dir] or [file] is empty"
+	emptyGJsonPath  = "gjson path is empty"
 )
 
 func init() {
@@ -322,4 +328,66 @@ func DeleteCol(c echo.Context) error {
 	}
 
 	return ok(c)
+}
+
+func Search(c echo.Context) error {
+	banTimes, err := checkIP(c)
+	if err != nil {
+		return err
+	}
+
+	dbName := c.Param("db")
+	dir := c.Param("dir")
+	if dbName == "" || dir == "" {
+		return resp(c, 520, emptyPath)
+	}
+
+	gjsonPath := c.QueryParam("path")
+	if gjsonPath == "" {
+		return resp(c, 521, emptyGJsonPath)
+	}
+	valueRegex := c.QueryParam("value")
+
+	if !checkPermission(c, "api.Search") {
+		banIP.Set(c.RealIP(), banTimes+1)
+		return permissionDenied(c)
+	}
+
+	p := consts.DBDir + path(dbName, dir, "")
+	files, err := ioutil.ReadDir(p)
+	if err != nil {
+		logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
+		return resp(c, 530, "ioutil.ReadDir(): "+err.Error())
+	}
+
+	var results []interface{}
+	for _, file := range files {
+		var dataStr string
+		d, ok := cacher.Get(path(dbName, dir, file.Name()))
+		if ok {
+			var err error
+			dataStr, err = json.MarshalToString(d)
+			if err != nil {
+				logger.E("[api.Search] json.MarshalToString(): %s\n", err.Error())
+				continue
+			}
+
+		} else {
+			d, err := ioutil.ReadFile(p + file.Name())
+			if err != nil {
+				logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
+				continue
+			}
+			dataStr = string(d)
+		}
+
+		result := gjson.Get(dataStr, gjsonPath)
+		if result.Exists() {
+			if ok, err := regexp.MatchString(valueRegex, result.Raw); (err == nil && ok) || valueRegex == "" {
+				results = append(results, d)
+			}
+		}
+	}
+
+	return resp(c, 200, results)
 }
