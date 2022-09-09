@@ -342,11 +342,18 @@ func Search(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	gjsonPath := c.QueryParam("path")
+	var searchReq model.SearchReq
+	err = c.Bind(&searchReq)
+	if err != nil {
+		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
+		return resp(c, 530, "c.Bind(): "+err.Error())
+	}
+
+	gjsonPath := searchReq.Path
 	if gjsonPath == "" {
 		return resp(c, 521, emptyGJsonPath)
 	}
-	valueRegex := c.QueryParam("value")
+	valueRegex := searchReq.Regex
 
 	if !checkPermission(c, "api.Search") {
 		banIP.Set(c.RealIP(), banTimes+1)
@@ -363,22 +370,29 @@ func Search(c echo.Context) error {
 	var results []interface{}
 	for _, file := range files {
 		var dataStr string
-		d, ok := cacher.Get(path(dbName, dir, file.Name()))
+		var err error
+		var ok bool
+		var d any
+
+		d, ok = cacher.Get(path(dbName, dir, file.Name()))
 		if ok {
-			var err error
 			dataStr, err = json.MarshalToString(d)
 			if err != nil {
 				logger.E("[api.Search] json.MarshalToString(): %s\n", err.Error())
 				continue
 			}
-
 		} else {
-			d, err := ioutil.ReadFile(p + file.Name())
+			data, err := ioutil.ReadFile(p + file.Name())
 			if err != nil {
 				logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
 				continue
 			}
-			dataStr = string(d)
+			dataStr = string(data)
+			err = json.Unmarshal(data, &d)
+			if err != nil {
+				logger.E("[api.Search] json.Unmarshal(): %s\n", err.Error())
+				continue
+			}
 		}
 
 		result := gjson.Get(dataStr, gjsonPath)
