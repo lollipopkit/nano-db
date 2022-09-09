@@ -16,15 +16,15 @@ func init() {
 	go setup()
 }
 
-func W(format string, args ...interface{}) {
+func W(format string, args ...any) {
 	log.Printf("[WARN] "+format, args...)
 }
 
-func I(format string, args ...interface{}) {
+func I(format string, args ...any) {
 	log.Printf("[INFO] "+format, args...)
 }
 
-func E(format string, args ...interface{}) {
+func E(format string, args ...any) {
 	log.Printf("[ERROR] "+format, args...)
 }
 

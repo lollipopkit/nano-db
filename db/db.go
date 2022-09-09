@@ -52,7 +52,7 @@ func getLock(path string) (*sync.RWMutex, error) {
 	return nil, ErrLockConvert
 }
 
-func Read(path string, model interface{}) error {
+func Read(path string, model any) error {
 	return wrapLock(path, func() error {
 		data, err := ioutil.ReadFile(consts.DBDir + path)
 		if err != nil {
@@ -62,7 +62,7 @@ func Read(path string, model interface{}) error {
 	}, false)
 }
 
-func Write(path string, model interface{}) error {
+func Write(path string, model any) error {
 	return wrapLock(path, func() error {
 		data, err := json.Marshal(model)
 		if err != nil {

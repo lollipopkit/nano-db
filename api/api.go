@@ -32,9 +32,9 @@ var (
 )
 
 const (
-	pathFmt         = "%s/%s/%s"
-	emptyPath       = "[db] or [dir] or [file] is empty"
-	emptyGJsonPath  = "gjson path is empty"
+	pathFmt        = "%s/%s/%s"
+	emptyPath      = "[db] or [dir] or [file] is empty"
+	emptyGJsonPath = "gjson path is empty"
 )
 
 func init() {
@@ -93,7 +93,7 @@ func Read(c echo.Context) error {
 		return resp(c, 200, item)
 	}
 
-	var content interface{}
+	var content any
 	err = db.Read(p, &content)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -132,7 +132,7 @@ func Write(c echo.Context) error {
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
-	var content interface{}
+	var content any
 	err = c.Bind(&content)
 	if err != nil {
 		logger.E("[api.Write] c.Bind(): %s\n", err.Error())
@@ -330,7 +330,7 @@ func DeleteCol(c echo.Context) error {
 	return ok(c)
 }
 
-func Search(c echo.Context) error {
+func SearchInDir(c echo.Context) error {
 	banTimes, err := checkIP(c)
 	if err != nil {
 		return err
@@ -367,7 +367,7 @@ func Search(c echo.Context) error {
 		return resp(c, 530, "ioutil.ReadDir(): "+err.Error())
 	}
 
-	var results []interface{}
+	var results []any
 	for _, file := range files {
 		var dataStr string
 		var err error
@@ -403,5 +403,90 @@ func Search(c echo.Context) error {
 		}
 	}
 
+	return resp(c, 200, results)
+}
+
+func SearchInDB(c echo.Context) error {
+	banTimes, err := checkIP(c)
+	if err != nil {
+		return err
+	}
+
+	dbName := c.Param("db")
+	if dbName == "" {
+		return resp(c, 520, emptyPath)
+	}
+
+	var searchReq model.SearchReq
+	err = c.Bind(&searchReq)
+	if err != nil {
+		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
+		return resp(c, 530, "c.Bind(): "+err.Error())
+	}
+
+	gjsonPath := searchReq.Path
+	if gjsonPath == "" {
+		return resp(c, 521, emptyGJsonPath)
+	}
+	valueRegex := searchReq.Regex
+
+	if !checkPermission(c, "api.Search") {
+		banIP.Set(c.RealIP(), banTimes+1)
+		return permissionDenied(c)
+	}
+
+	p := consts.DBDir + dbName + "/"
+	dirs, err := ioutil.ReadDir(p)
+	if err != nil {
+		logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
+		return resp(c, 530, "ioutil.ReadDir(): "+err.Error())
+	}
+
+	var results []any
+	for _, dir := range dirs {
+		if !dir.IsDir() {
+			continue
+		}
+		files, err := ioutil.ReadDir(p + dir.Name() + "/")
+		if err != nil {
+			logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
+			continue
+		}
+		for _, file := range files {
+			var dataStr string
+			var err error
+			var ok bool
+			var d any
+
+			d, ok = cacher.Get(path(dbName, dir.Name(), file.Name()))
+			if ok {
+				dataStr, err = json.MarshalToString(d)
+				if err != nil {
+					logger.E("[api.Search] json.MarshalToString(): %s\n", err.Error())
+					continue
+				}
+			} else {
+				data, err := ioutil.ReadFile(p + dir.Name() + "/" + file.Name())
+				if err != nil {
+					logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
+					continue
+				}
+				dataStr = string(data)
+				err = json.Unmarshal(data, &d)
+				if err != nil {
+					logger.E("[api.Search] json.Unmarshal(): %s\n", err.Error())
+					continue
+				}
+			}
+
+			result := gjson.Get(dataStr, gjsonPath)
+			if result.Exists() {
+				if ok, err := regexp.MatchString(valueRegex, result.Raw); (err == nil && ok) || valueRegex == "" {
+					results = append(results, d)
+				}
+			}
+		}
+	}
+	
 	return resp(c, 200, results)
 }
