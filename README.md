@@ -1,5 +1,5 @@
 ## Nano DB
-一款以golang编写的轻量、非关系型、基于文件系统的kv数据库。  
+一款以golang编写的轻量、非关系型、基于文件系统的数据库。  
 
 白话文：将数据按文件储存，再提供http接口来访问，因此可以适用于分布式服务（一台数据库服务器，多个后端服务器）。  
 
@@ -76,6 +76,7 @@ POST|`/{DB}/{DIR}`|搜索DIR下所有文件|返回包含`gjson.Get(FILE,p).Exist
 GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
 POST|`/{DB}/{DIR}/{FILE}`|插入/更新|需要在body附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
+
 ⚠️**注意**：`{DB}`,`{DIR}`,`{FILE}` 不能包含字符 `/` ` ` `\` `..`，并且他们的长度都不能超过37。
 
 建议规范：`novel/chapter/1.json` `xapp/user/xxx.json` `secret/key/xxx.json`

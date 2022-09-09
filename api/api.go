@@ -369,25 +369,24 @@ func SearchInDir(c echo.Context) error {
 
 	var results []any
 	for _, file := range files {
-		var dataStr string
+		var data []byte
 		var err error
 		var ok bool
 		var d any
 
 		d, ok = cacher.Get(path(dbName, dir, file.Name()))
 		if ok {
-			dataStr, err = json.MarshalToString(d)
+			data, err = json.Marshal(d)
 			if err != nil {
-				logger.E("[api.Search] json.MarshalToString(): %s\n", err.Error())
+				logger.E("[api.Search] json.Marshal(): %s\n", err.Error())
 				continue
 			}
 		} else {
-			data, err := ioutil.ReadFile(p + file.Name())
+			data, err = ioutil.ReadFile(p + file.Name())
 			if err != nil {
 				logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
 				continue
 			}
-			dataStr = string(data)
 			err = json.Unmarshal(data, &d)
 			if err != nil {
 				logger.E("[api.Search] json.Unmarshal(): %s\n", err.Error())
@@ -395,7 +394,7 @@ func SearchInDir(c echo.Context) error {
 			}
 		}
 
-		result := gjson.Get(dataStr, gjsonPath)
+		result := gjson.GetBytes(data, gjsonPath)
 		if result.Exists() {
 			if ok, err := regexp.MatchString(valueRegex, result.Raw); (err == nil && ok) || valueRegex == "" {
 				results = append(results, d)
@@ -453,25 +452,24 @@ func SearchInDB(c echo.Context) error {
 			continue
 		}
 		for _, file := range files {
-			var dataStr string
+			var data []byte
 			var err error
 			var ok bool
 			var d any
 
 			d, ok = cacher.Get(path(dbName, dir.Name(), file.Name()))
 			if ok {
-				dataStr, err = json.MarshalToString(d)
+				data, err = json.Marshal(d)
 				if err != nil {
-					logger.E("[api.Search] json.MarshalToString(): %s\n", err.Error())
+					logger.E("[api.Search] json.Marshal(): %s\n", err.Error())
 					continue
 				}
 			} else {
-				data, err := ioutil.ReadFile(p + dir.Name() + "/" + file.Name())
+				data, err = ioutil.ReadFile(p + dir.Name() + "/" + file.Name())
 				if err != nil {
 					logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
 					continue
 				}
-				dataStr = string(data)
 				err = json.Unmarshal(data, &d)
 				if err != nil {
 					logger.E("[api.Search] json.Unmarshal(): %s\n", err.Error())
@@ -479,7 +477,7 @@ func SearchInDB(c echo.Context) error {
 				}
 			}
 
-			result := gjson.Get(dataStr, gjsonPath)
+			result := gjson.GetBytes(data, gjsonPath)
 			if result.Exists() {
 				if ok, err := regexp.MatchString(valueRegex, result.Raw); (err == nil && ok) || valueRegex == "" {
 					results = append(results, d)

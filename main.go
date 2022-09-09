@@ -9,6 +9,7 @@ import (
 	"git.lolli.tech/lollipopkit/nano-db/api"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/utils"
+	mid "git.lolli.tech/lollipopkit/nano-db/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -37,14 +38,13 @@ func main() {
 	startHttp(addr)
 }
 
+
+
 func startHttp(addr *string) {
 	// Echo instance
 	e := echo.New()
 
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format:  consts.LogFormat,
-		Skipper: consts.StaticLogSkipper,
-	}))
+	e.Use(mid.Logger)
 	e.Use(middleware.Recover())
 
 	// Routes
