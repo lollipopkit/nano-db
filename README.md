@@ -67,11 +67,11 @@ Usage of ./nano-db:
 ---|---|---|---
 HEAD|`/`|查看数据库是否存活|唯一不需要附带cookie的接口，可用于客户端检查数据库是否存活
 GET|`/`|查看总状态|会输出有多少数据库、DIR、内存缓存项及获取时间
-GET|`/{DB}`|获取DB内所有Col|会返回所有dir的名称，并非db内所有dir的数据
+GET|`/{DB}`|获取DB内所有DIR|会返回所有DIR的名称，并非DB内所有DIR的数据
 DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
-GET|`/{DB}/{DIR}`|获取Col内所有FILE|获取dir下所有文件的名称，并非dir下所有数据
-DELETE|`/{DB}/{DIR}`|删除某Col|并且删除dir下所有FILE
-POST|`/{DB}/{DIR}?path={p}&value={v}`|搜索|会搜索dir下所有文件，返回包含`gjson.Get(FILE,p).Exists()`为true的文件。如果正则`v`不为空，则会返回`gjson.Result.Raw`匹配的文件。
+GET|`/{DB}/{DIR}`|获取DIR内所有FILE|获取DIR下所有文件的名称，并非DIR下所有数据
+DELETE|`/{DB}/{DIR}`|删除某DIR|并且删除DIR下所有FILE
+POST|`/{DB}/{DIR}`|搜索DIR下所有文件|返回包含`gjson.Get(FILE,p).Exists()`为真的文件内容。如果正则`v`不为空，则会剔除`gjson.Result.Raw`不匹配的。body结构：`{"path":"","regex":""}`
 GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
 POST|`/{DB}/{DIR}/{FILE}`|插入/更新|需要在body附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
