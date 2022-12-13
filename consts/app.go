@@ -18,13 +18,11 @@ const (
 
 	MaxIdLength    = 37
 	SaltDefaultLen = 17
-
-	MaxIPFailedTimes = 37
 )
 
 var (
 	// adjust this value according to your memory size.
 	// bigger for better performance.
-	CacherMaxLength = 100
-	CookieSalt      = "nano-db"
+	CacherMaxLength uint = 100
+	CookieSalt           = "nano-db"
 )

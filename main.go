@@ -8,8 +8,8 @@ import (
 
 	"git.lolli.tech/lollipopkit/nano-db/api"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
-	"git.lolli.tech/lollipopkit/nano-db/utils"
 	mid "git.lolli.tech/lollipopkit/nano-db/middleware"
+	"git.lolli.tech/lollipopkit/nano-db/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -18,7 +18,7 @@ func main() {
 	addr := flag.String("a", "0.0.0.0:3777", "specific the addr to listen")
 	userName := flag.String("u", "", "generate the cookie with -u <username>")
 	dbName := flag.String("d", "", "update acl rules with -d <dbname>")
-	cacheLen := flag.Int("l", 100, "set the max length of cache")
+	cacheLen := flag.Uint("l", 100, "set the max length of cache")
 	flag.Parse()
 
 	initSalt()
@@ -37,8 +37,6 @@ func main() {
 
 	startHttp(addr)
 }
-
-
 
 func startHttp(addr *string) {
 	// Echo instance

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	glc "git.lolli.tech/lollipopkit/go_lru_cacher"
+	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -15,9 +15,8 @@ import (
 var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-	pathLockLength = consts.CacherMaxLength
 	// map[string]*sync.RWMutex : {"PATH": LOCK}
-	pathLockCacher = glc.NewCacher(pathLockLength)
+	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
 
 	ErrLockConvert = errors.New("lock convert failed")
 )
@@ -32,9 +31,9 @@ func getLock(path string) (*sync.RWMutex, error) {
 	l, have := pathLockCacher.Get(path)
 	if !have {
 		// 防止pathLockCacher因为超出最大长度，而清理可能正在使用的锁
-		// 例如：有超过pathLockLength个的进程同时读写
+		// 例如：有超过consts.CacherMaxLength个的进程同时读写
 		for {
-			if pathLockCacher.Len() < pathLockLength {
+			if pathLockCacher.Len() < consts.CacherMaxLength {
 				break
 			}
 			time.Sleep(time.Millisecond * 100)

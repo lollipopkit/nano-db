@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	glc "git.lolli.tech/lollipopkit/go_lru_cacher"
+	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
@@ -24,8 +24,6 @@ var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	cacher = glc.NewCacher(consts.CacherMaxLength * 100)
-	// record ip's failed times: map[string]int -> {"ip": times}
-	banIP = glc.NewCacher(consts.CacherMaxLength)
 
 	Acl     = &model.ACL{}
 	AclLock = &sync.RWMutex{}
@@ -50,26 +48,7 @@ func init() {
 	}()
 }
 
-func checkIP(c echo.Context) (int, error) {
-	v, ok := banIP.Get(c.RealIP())
-	if ok {
-		times, ok := v.(int)
-		if ok {
-			if times >= consts.MaxIPFailedTimes {
-				return times, resp(c, 531, "ip is blocked")
-			}
-		}
-		return times, resp(c, 532, "banned ip list convert error")
-	}
-	return 0, nil
-}
-
 func Read(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	file := c.Param("file")
@@ -77,12 +56,11 @@ func Read(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Read") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	p := path(dbName, dir, file)
+	if !checkPermission(c, "api.Read", dbName, p) {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, dir, file)
 	if err := verifyParams([]string{dbName, dir, file}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
@@ -94,7 +72,7 @@ func Read(c echo.Context) error {
 	}
 
 	var content any
-	err = db.Read(p, &content)
+	err := db.Read(p, &content)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.E("[api.Read] db.Read(): %s\n", err.Error())
@@ -109,11 +87,6 @@ func Read(c echo.Context) error {
 }
 
 func Write(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	file := c.Param("file")
@@ -121,19 +94,18 @@ func Write(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Write") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	p := path(dbName, dir, file)
+	if !checkPermission(c, "api.Write", dbName, p) {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, dir, file)
 	if err := verifyParams([]string{dbName, dir, file}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
 	var content any
-	err = c.Bind(&content)
+	err := c.Bind(&content)
 	if err != nil {
 		logger.E("[api.Write] c.Bind(): %s\n", err.Error())
 		return resp(c, 522, "c.Bind(): "+err.Error())
@@ -157,11 +129,6 @@ func Write(c echo.Context) error {
 }
 
 func Delete(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	file := c.Param("file")
@@ -169,18 +136,17 @@ func Delete(c echo.Context) error {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Delete") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	p := path(dbName, dir, file)
+	if !checkPermission(c, "api.Delete", dbName, p) {
 		return permissionDenied(c)
 	}
 
-	p := path(dbName, dir, file)
 	if err := verifyParams([]string{dbName, dir, file}); err != nil {
 		logger.W("[api.Write] %s is not valid: %s\n", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
-	err = db.Delete(p)
+	err := db.Delete(p)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.E("[api.Delete] db.Delete(): %s\n", err.Error())
@@ -194,23 +160,17 @@ func Delete(c echo.Context) error {
 }
 
 func Files(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	if dbName == "" || dir == "" {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Files") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	p := consts.DBDir + path(dbName, dir, "")
+	if !checkPermission(c, "api.Files", dbName, p) {
 		return permissionDenied(c)
 	}
 
-	p := consts.DBDir + path(dbName, dir, "")
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		logger.E("[api.IDs] ioutil.ReadDir(): %s\n", err.Error())
@@ -228,18 +188,12 @@ func Files(c echo.Context) error {
 }
 
 func Dirs(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	if dbName == "" {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Dirs") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	if !checkPermission(c, "api.Dirs", dbName, dbName) {
 		return permissionDenied(c)
 	}
 
@@ -260,22 +214,16 @@ func Dirs(c echo.Context) error {
 }
 
 func DeleteDB(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	if dbName == "" {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.DeleteDB") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	if !checkPermission(c, "api.DeleteDB", dbName, dbName) {
 		return permissionDenied(c)
 	}
 
-	err = os.RemoveAll(consts.DBDir + dbName)
+	err := os.RemoveAll(consts.DBDir + dbName)
 	if err != nil {
 		logger.E("[api.DeleteDB] os.RemoveAll(): %s\n", err.Error())
 		return resp(c, 528, "os.RemoveAll(): "+err.Error())
@@ -295,23 +243,17 @@ func DeleteDB(c echo.Context) error {
 }
 
 func DeleteCol(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	if dbName == "" || dir == "" {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.DeleteCol") {
-		banIP.Set(c.RealIP(), banTimes+1)
+	if !checkPermission(c, "api.DeleteCol", dbName, dbName) {
 		return permissionDenied(c)
 	}
 
-	err = os.RemoveAll(consts.DBDir + dbName + "/" + dir)
+	err := os.RemoveAll(consts.DBDir + dbName + "/" + dir)
 	if err != nil {
 		logger.E("[api.DeleteCol] os.RemoveAll(): %s\n", err.Error())
 		return resp(c, 529, "os.RemoveAll(): "+err.Error())
@@ -331,19 +273,19 @@ func DeleteCol(c echo.Context) error {
 }
 
 func SearchInDir(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	if dbName == "" || dir == "" {
 		return resp(c, 520, emptyPath)
 	}
 
+	p := consts.DBDir + path(dbName, dir, "")
+	if !checkPermission(c, "api.Search", dbName, p) {
+		return permissionDenied(c)
+	}
+
 	var searchReq model.SearchReq
-	err = c.Bind(&searchReq)
+	err := c.Bind(&searchReq)
 	if err != nil {
 		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
@@ -355,12 +297,6 @@ func SearchInDir(c echo.Context) error {
 	}
 	valueRegex := searchReq.Regex
 
-	if !checkPermission(c, "api.Search") {
-		banIP.Set(c.RealIP(), banTimes+1)
-		return permissionDenied(c)
-	}
-
-	p := consts.DBDir + path(dbName, dir, "")
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
@@ -406,18 +342,17 @@ func SearchInDir(c echo.Context) error {
 }
 
 func SearchInDB(c echo.Context) error {
-	banTimes, err := checkIP(c)
-	if err != nil {
-		return err
-	}
-
 	dbName := c.Param("db")
 	if dbName == "" {
 		return resp(c, 520, emptyPath)
 	}
 
+	if !checkPermission(c, "api.Search", dbName, dbName) {
+		return permissionDenied(c)
+	}
+
 	var searchReq model.SearchReq
-	err = c.Bind(&searchReq)
+	err := c.Bind(&searchReq)
 	if err != nil {
 		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
@@ -428,11 +363,6 @@ func SearchInDB(c echo.Context) error {
 		return resp(c, 521, emptyGJsonPath)
 	}
 	valueRegex := searchReq.Regex
-
-	if !checkPermission(c, "api.Search") {
-		banIP.Set(c.RealIP(), banTimes+1)
-		return permissionDenied(c)
-	}
 
 	p := consts.DBDir + dbName + "/"
 	dirs, err := ioutil.ReadDir(p)
@@ -485,6 +415,6 @@ func SearchInDB(c echo.Context) error {
 			}
 		}
 	}
-	
+
 	return resp(c, 200, results)
 }
