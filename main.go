@@ -19,6 +19,7 @@ func main() {
 	userName := flag.String("u", "", "generate the cookie with -u <username>")
 	dbName := flag.String("d", "", "update acl rules with -d <dbname>")
 	cacheLen := flag.Uint("l", 100, "set the max length of cache")
+	log := flag.Bool("log", false, "enable log")
 	flag.Parse()
 
 	initSalt()
@@ -35,14 +36,16 @@ func main() {
 		return
 	}
 
-	startHttp(addr)
+	startHttp(addr, *log)
 }
 
-func startHttp(addr *string) {
+func startHttp(addr *string, log bool) {
 	// Echo instance
 	e := echo.New()
 
-	e.Use(mid.Logger)
+	if log {
+		e.Use(mid.Logger)
+	}
 	e.Use(middleware.Recover())
 
 	// Routes
@@ -63,7 +66,7 @@ func startHttp(addr *string) {
 
 	// Start server
 	e.HideBanner = true
-	e.Logger.Fatal(e.Start(*addr))
+	e.Start(*addr)
 }
 
 func updateAcl(userName, dbName *string) {
