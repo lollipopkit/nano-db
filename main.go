@@ -52,11 +52,11 @@ func startHttp(addr *string, log bool) {
 
 	e.GET("/:db", api.Dirs)
 	e.DELETE("/:db", api.DeleteDB)
-	e.POST("/:db", api.SearchInDB)
+	e.POST("/:db", api.SearchDB)
 
 	e.GET("/:db/:dir", api.Files)
-	e.DELETE("/:db/:dir", api.DeleteCol)
-	e.POST("/:db/:dir", api.SearchInDir)
+	e.DELETE("/:db/:dir", api.DeleteDir)
+	e.POST("/:db/:dir", api.SearchDir)
 
 	e.GET("/:db/:dir/:file", api.Read)
 	e.POST("/:db/:dir/:file", api.Write)

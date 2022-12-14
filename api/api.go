@@ -13,19 +13,16 @@ import (
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
-	jsoniter "github.com/json-iterator/go"
+	. "git.lolli.tech/lollipopkit/nano-db/json"
 	"github.com/labstack/echo/v4"
 	"github.com/tidwall/gjson"
 )
 
 var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
-
 	cacher = glc.NewCacher(consts.CacherMaxLength * 100)
 )
 
 const (
-	pathFmt        = "%s/%s/%s"
 	emptyPath      = "[db] or [dir] or [file] is empty"
 	emptyGJsonPath = "gjson path is empty"
 )
@@ -237,20 +234,20 @@ func DeleteDB(c echo.Context) error {
 	return ok(c)
 }
 
-func DeleteCol(c echo.Context) error {
+func DeleteDir(c echo.Context) error {
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	if dbName == "" || dir == "" {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.DeleteCol", dbName, dbName) {
+	if !checkPermission(c, "api.DeleteDir", dbName, dbName) {
 		return permissionDenied(c)
 	}
 
 	err := os.RemoveAll(consts.DBDir + dbName + "/" + dir)
 	if err != nil {
-		logger.E("[api.DeleteCol] os.RemoveAll(): %s\n", err.Error())
+		logger.E("[api.DeleteDir] os.RemoveAll(): %s\n", err.Error())
 		return resp(c, 529, "os.RemoveAll(): "+err.Error())
 	}
 
@@ -267,7 +264,7 @@ func DeleteCol(c echo.Context) error {
 	return ok(c)
 }
 
-func SearchInDir(c echo.Context) error {
+func SearchDir(c echo.Context) error {
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 	if dbName == "" || dir == "" {
@@ -275,14 +272,14 @@ func SearchInDir(c echo.Context) error {
 	}
 
 	p := consts.DBDir + path(dbName, dir, "")
-	if !checkPermission(c, "api.Search", dbName, p) {
+	if !checkPermission(c, "api.SearchDir", dbName, p) {
 		return permissionDenied(c)
 	}
 
 	searchReq := new(SearchReq)
 	err := c.Bind(searchReq)
 	if err != nil {
-		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
+		logger.E("[api.SearchDir] c.Bind(): %s\n", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
 	}
 
@@ -292,7 +289,7 @@ func SearchInDir(c echo.Context) error {
 
 	files, err := os.ReadDir(p)
 	if err != nil {
-		logger.E("[api.Search] os.ReadDir(): %s\n", err.Error())
+		logger.E("[api.SearchDir] os.ReadDir(): %s\n", err.Error())
 		return resp(c, 530, "os.ReadDir(): "+err.Error())
 	}
 
@@ -305,20 +302,20 @@ func SearchInDir(c echo.Context) error {
 
 		d, ok = cacher.Get(path(dbName, dir, file.Name()))
 		if ok {
-			data, err = json.Marshal(d)
+			data, err = Json.Marshal(d)
 			if err != nil {
-				logger.E("[api.Search] json.Marshal(): %s\n", err.Error())
+				logger.E("[api.SearchDir] JsonMarshal(): %s\n", err.Error())
 				continue
 			}
 		} else {
 			data, err = os.ReadFile(p + file.Name())
 			if err != nil {
-				logger.E("[api.Search] os.ReadFile(): %s\n", err.Error())
+				logger.E("[api.SearchDir] os.ReadFile(): %s\n", err.Error())
 				continue
 			}
-			err = json.Unmarshal(data, &d)
+			err = Json.Unmarshal(data, &d)
 			if err != nil {
-				logger.E("[api.Search] json.Unmarshal(): %s\n", err.Error())
+				logger.E("[api.SearchDir] JsonUnmarshal(): %s\n", err.Error())
 				continue
 			}
 		}
@@ -339,20 +336,20 @@ func SearchInDir(c echo.Context) error {
 	return resp(c, 200, results)
 }
 
-func SearchInDB(c echo.Context) error {
+func SearchDB(c echo.Context) error {
 	dbName := c.Param("db")
 	if dbName == "" {
 		return resp(c, 520, emptyPath)
 	}
 
-	if !checkPermission(c, "api.Search", dbName, dbName) {
+	if !checkPermission(c, "api.SearchDB", dbName, dbName) {
 		return permissionDenied(c)
 	}
 
 	searchReq := new(SearchReq)
 	err := c.Bind(searchReq)
 	if err != nil {
-		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
+		logger.E("[api.SearchDB] c.Bind(): %s\n", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
 	}
 
@@ -363,7 +360,7 @@ func SearchInDB(c echo.Context) error {
 	p := consts.DBDir + dbName + "/"
 	dirs, err := os.ReadDir(p)
 	if err != nil {
-		logger.E("[api.Search] os.ReadDir(): %s\n", err.Error())
+		logger.E("[api.SearchDB] os.ReadDir(): %s\n", err.Error())
 		return resp(c, 530, "os.ReadDir(): "+err.Error())
 	}
 
@@ -374,7 +371,7 @@ func SearchInDB(c echo.Context) error {
 		}
 		files, err := os.ReadDir(p + dir.Name() + "/")
 		if err != nil {
-			logger.E("[api.Search] os.ReadDir(): %s\n", err.Error())
+			logger.E("[api.SearchDB] os.ReadDir(): %s\n", err.Error())
 			continue
 		}
 		for _, file := range files {
@@ -385,20 +382,20 @@ func SearchInDB(c echo.Context) error {
 
 			d, ok = cacher.Get(path(dbName, dir.Name(), file.Name()))
 			if ok {
-				data, err = json.Marshal(d)
+				data, err = Json.Marshal(d)
 				if err != nil {
-					logger.E("[api.Search] json.Marshal(): %s\n", err.Error())
+					logger.E("[api.SearchDB] JsonMarshal(): %s\n", err.Error())
 					continue
 				}
 			} else {
 				data, err = os.ReadFile(p + dir.Name() + "/" + file.Name())
 				if err != nil {
-					logger.E("[api.Search] os.ReadFile(): %s\n", err.Error())
+					logger.E("[api.SearchDB] os.ReadFile(): %s\n", err.Error())
 					continue
 				}
-				err = json.Unmarshal(data, &d)
+				err = Json.Unmarshal(data, &d)
 				if err != nil {
-					logger.E("[api.Search] json.Unmarshal(): %s\n", err.Error())
+					logger.E("[api.SearchDB] JsonUnmarshal(): %s\n", err.Error())
 					continue
 				}
 			}

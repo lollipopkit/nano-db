@@ -8,11 +8,10 @@ import (
 
 	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
-	jsoniter "github.com/json-iterator/go"
+	. "git.lolli.tech/lollipopkit/nano-db/json"
 )
 
 var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	// map[string]*sync.RWMutex : {"PATH": LOCK}
 	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
@@ -56,13 +55,13 @@ func Read(path string, model any) error {
 		if err != nil {
 			return err
 		}
-		return json.Unmarshal(data, &model)
+		return Json.Unmarshal(data, &model)
 	}, false)
 }
 
 func Write(path string, model any) error {
 	return wrapLock(path, func() error {
-		data, err := json.Marshal(model)
+		data, err := Json.Marshal(model)
 		if err != nil {
 			return err
 		}

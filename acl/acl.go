@@ -1,12 +1,12 @@
 package acl
 
 import (
-	"encoding/json"
 	"os"
 	"sync"
 
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/utils"
+	. "git.lolli.tech/lollipopkit/nano-db/json"
 )
 
 var (
@@ -15,8 +15,8 @@ var (
 )
 
 type ACL struct {
-	Version int       `json:"ver"`
-	Rules   []ACLRule `json:"rules"`
+	Version int        `json:"ver"`
+	Rules   []*ACLRule `json:"rules"`
 }
 
 type ACLRule struct {
@@ -25,7 +25,7 @@ type ACLRule struct {
 }
 
 func (acl *ACL) Save() error {
-	data, err := json.Marshal(acl)
+	data, err := Json.Marshal(acl)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (acl *ACL) Load() error {
 
 		acl = &ACL{
 			Version: 1,
-			Rules:   []ACLRule{},
+			Rules:   []*ACLRule{},
 		}
 
 		return acl.Save()
@@ -51,7 +51,7 @@ func (acl *ACL) Load() error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(data, acl)
+	return Json.Unmarshal(data, acl)
 }
 
 func (acl *ACL) UpdateRule(dbName, userName string) error {
@@ -66,7 +66,7 @@ func (acl *ACL) UpdateRule(dbName, userName string) error {
 			return acl.Save()
 		}
 	}
-	acl.Rules = append(acl.Rules, ACLRule{
+	acl.Rules = append(acl.Rules, &ACLRule{
 		DBNames:  []string{dbName},
 		UserName: userName,
 	})
@@ -87,35 +87,9 @@ func (acl *ACL) Can(dbName, userName string) bool {
 	return false
 }
 
-func (acl *ACL) HaveDB(dbName string) bool {
-	for _, rule := range acl.Rules {
-		for _, db := range rule.DBNames {
-			if db == dbName {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func UpdateAcl(userName, dbName *string) {
 	print("[ACL]\n  ")
-	AclLock.RLock()
-	if Acl.HaveDB(*dbName) {
-		if !Acl.Can(*dbName, *userName) {
-			AclLock.RUnlock()
-			println("this db already owned by other user")
-			return
-		}
-		AclLock.RUnlock()
-		println(*userName + " already owned this db")
-		return
-	}
-
-	AclLock.RUnlock()
-	AclLock.Lock()
 	err := Acl.UpdateRule(*dbName, *userName)
-	AclLock.Unlock()
 
 	if err != nil {
 		println("acl update rule: " + err.Error())

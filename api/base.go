@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	statusFmt = "%d dbs, %d collections, %d cached items in %s"
+	statusFmt = "%d dbs, %d dirs, %d cached items in %s"
 )
 
 func Alive(c echo.Context) error {

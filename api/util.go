@@ -14,6 +14,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	pathFmt        = "%s/%s/%s"
+)
+
 func resp(c echo.Context, code int, data any) error {
 	return c.JSON(200, map[string]any{
 		"data": data,
@@ -29,8 +33,8 @@ func permissionDenied(c echo.Context) error {
 	return resp(c, 403, "permission denied")
 }
 
-func path(db, col, id string) string {
-	return fmt.Sprintf(pathFmt, db, col, id)
+func path(db, dir, id string) string {
+	return fmt.Sprintf(pathFmt, db, dir, id)
 }
 
 func accountVerify(c echo.Context) (bool, string) {
