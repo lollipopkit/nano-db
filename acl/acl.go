@@ -1,12 +1,17 @@
-package model
+package acl
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
+	"sync"
 
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/utils"
+)
+
+var (
+	Acl     = &ACL{}
+	AclLock = &sync.RWMutex{}
 )
 
 type ACL struct {
@@ -24,7 +29,7 @@ func (acl *ACL) Save() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(consts.ACLFile, data, consts.FilePermission)
+	return os.WriteFile(consts.ACLFile, data, consts.FilePermission)
 }
 
 func (acl *ACL) Load() error {
@@ -42,7 +47,7 @@ func (acl *ACL) Load() error {
 		return acl.Save()
 	}
 
-	data, err := ioutil.ReadFile(consts.ACLFile)
+	data, err := os.ReadFile(consts.ACLFile)
 	if err != nil {
 		return err
 	}
@@ -91,4 +96,30 @@ func (acl *ACL) HaveDB(dbName string) bool {
 		}
 	}
 	return false
+}
+
+func UpdateAcl(userName, dbName *string) {
+	print("[ACL]\n  ")
+	AclLock.RLock()
+	if Acl.HaveDB(*dbName) {
+		if !Acl.Can(*dbName, *userName) {
+			AclLock.RUnlock()
+			println("this db already owned by other user")
+			return
+		}
+		AclLock.RUnlock()
+		println(*userName + " already owned this db")
+		return
+	}
+
+	AclLock.RUnlock()
+	AclLock.Lock()
+	err := Acl.UpdateRule(*dbName, *userName)
+	AclLock.Unlock()
+
+	if err != nil {
+		println("acl update rule: " + err.Error())
+	} else {
+		println("acl update rule: success")
+	}
 }

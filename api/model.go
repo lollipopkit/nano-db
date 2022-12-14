@@ -1,4 +1,4 @@
-package model
+package api
 
 type SearchReq struct {
 	Path  string `json:"path"`

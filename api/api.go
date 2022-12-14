@@ -3,18 +3,16 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
+	. "git.lolli.tech/lollipopkit/nano-db/acl"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
-	"git.lolli.tech/lollipopkit/nano-db/model"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/labstack/echo/v4"
 	"github.com/tidwall/gjson"
@@ -24,9 +22,6 @@ var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	cacher = glc.NewCacher(consts.CacherMaxLength * 100)
-
-	Acl     = &model.ACL{}
-	AclLock = &sync.RWMutex{}
 )
 
 const (
@@ -171,10 +166,10 @@ func Files(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	files, err := ioutil.ReadDir(p)
+	files, err := os.ReadDir(p)
 	if err != nil {
-		logger.E("[api.IDs] ioutil.ReadDir(): %s\n", err.Error())
-		return resp(c, 526, "ioutil.ReadDir(): "+err.Error())
+		logger.E("[api.IDs] os.ReadDir(): %s\n", err.Error())
+		return resp(c, 526, "os.ReadDir(): "+err.Error())
 	}
 
 	var filesList []string
@@ -197,10 +192,10 @@ func Dirs(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	dirs, err := ioutil.ReadDir(consts.DBDir + dbName)
+	dirs, err := os.ReadDir(consts.DBDir + dbName)
 	if err != nil {
-		logger.E("[api.Dirs] ioutil.ReadDir(): %s\n", err.Error())
-		return resp(c, 527, "ioutil.ReadDir(): "+err.Error())
+		logger.E("[api.Dirs] os.ReadDir(): %s\n", err.Error())
+		return resp(c, 527, "os.ReadDir(): "+err.Error())
 	}
 
 	var dirsList []string
@@ -284,23 +279,21 @@ func SearchInDir(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	var searchReq model.SearchReq
-	err := c.Bind(&searchReq)
+	searchReq := new(SearchReq)
+	err := c.Bind(searchReq)
 	if err != nil {
 		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
 	}
 
-	gjsonPath := searchReq.Path
-	if gjsonPath == "" {
+	if searchReq.Path == "" {
 		return resp(c, 521, emptyGJsonPath)
 	}
-	valueRegex := searchReq.Regex
 
-	files, err := ioutil.ReadDir(p)
+	files, err := os.ReadDir(p)
 	if err != nil {
-		logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
-		return resp(c, 530, "ioutil.ReadDir(): "+err.Error())
+		logger.E("[api.Search] os.ReadDir(): %s\n", err.Error())
+		return resp(c, 530, "os.ReadDir(): "+err.Error())
 	}
 
 	var results []any
@@ -318,9 +311,9 @@ func SearchInDir(c echo.Context) error {
 				continue
 			}
 		} else {
-			data, err = ioutil.ReadFile(p + file.Name())
+			data, err = os.ReadFile(p + file.Name())
 			if err != nil {
-				logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
+				logger.E("[api.Search] os.ReadFile(): %s\n", err.Error())
 				continue
 			}
 			err = json.Unmarshal(data, &d)
@@ -330,9 +323,14 @@ func SearchInDir(c echo.Context) error {
 			}
 		}
 
-		result := gjson.GetBytes(data, gjsonPath)
+		result := gjson.GetBytes(data, searchReq.Path)
 		if result.Exists() {
-			if ok, err := regexp.MatchString(valueRegex, result.Raw); (err == nil && ok) || valueRegex == "" {
+			if searchReq.Regex == "" {
+				results = append(results, d)
+				continue
+			}
+			ok, err := regexp.MatchString(searchReq.Regex, result.Raw)
+			if err == nil && ok {
 				results = append(results, d)
 			}
 		}
@@ -351,24 +349,22 @@ func SearchInDB(c echo.Context) error {
 		return permissionDenied(c)
 	}
 
-	var searchReq model.SearchReq
-	err := c.Bind(&searchReq)
+	searchReq := new(SearchReq)
+	err := c.Bind(searchReq)
 	if err != nil {
 		logger.E("[api.Search] c.Bind(): %s\n", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
 	}
 
-	gjsonPath := searchReq.Path
-	if gjsonPath == "" {
+	if searchReq.Path == "" {
 		return resp(c, 521, emptyGJsonPath)
 	}
-	valueRegex := searchReq.Regex
 
 	p := consts.DBDir + dbName + "/"
-	dirs, err := ioutil.ReadDir(p)
+	dirs, err := os.ReadDir(p)
 	if err != nil {
-		logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
-		return resp(c, 530, "ioutil.ReadDir(): "+err.Error())
+		logger.E("[api.Search] os.ReadDir(): %s\n", err.Error())
+		return resp(c, 530, "os.ReadDir(): "+err.Error())
 	}
 
 	var results []any
@@ -376,9 +372,9 @@ func SearchInDB(c echo.Context) error {
 		if !dir.IsDir() {
 			continue
 		}
-		files, err := ioutil.ReadDir(p + dir.Name() + "/")
+		files, err := os.ReadDir(p + dir.Name() + "/")
 		if err != nil {
-			logger.E("[api.Search] ioutil.ReadDir(): %s\n", err.Error())
+			logger.E("[api.Search] os.ReadDir(): %s\n", err.Error())
 			continue
 		}
 		for _, file := range files {
@@ -395,9 +391,9 @@ func SearchInDB(c echo.Context) error {
 					continue
 				}
 			} else {
-				data, err = ioutil.ReadFile(p + dir.Name() + "/" + file.Name())
+				data, err = os.ReadFile(p + dir.Name() + "/" + file.Name())
 				if err != nil {
-					logger.E("[api.Search] ioutil.ReadFile(): %s\n", err.Error())
+					logger.E("[api.Search] os.ReadFile(): %s\n", err.Error())
 					continue
 				}
 				err = json.Unmarshal(data, &d)
@@ -407,9 +403,14 @@ func SearchInDB(c echo.Context) error {
 				}
 			}
 
-			result := gjson.GetBytes(data, gjsonPath)
+			result := gjson.GetBytes(data, searchReq.Path)
 			if result.Exists() {
-				if ok, err := regexp.MatchString(valueRegex, result.Raw); (err == nil && ok) || valueRegex == "" {
+				if searchReq.Regex == "" {
+					results = append(results, d)
+					continue
+				}
+				ok, err := regexp.MatchString(searchReq.Regex, result.Raw)
+				if err == nil && ok {
 					results = append(results, d)
 				}
 			}

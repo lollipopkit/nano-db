@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	. "git.lolli.tech/lollipopkit/nano-db/acl"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
@@ -124,11 +125,10 @@ func checkPermission(c echo.Context, action, dbName, path string) bool {
 	}
 
 	AclLock.RLock()
+	defer AclLock.RUnlock()
 	if !Acl.Can(dbName, userName) {
 		logger.W("[%s] user [%s] is trying access [%s]\n", action, userName, path)
-		AclLock.RUnlock()
 		return false
 	}
-	AclLock.RUnlock()
 	return true
 }

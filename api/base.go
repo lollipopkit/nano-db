@@ -2,9 +2,10 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
+	. "git.lolli.tech/lollipopkit/nano-db/acl"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
@@ -29,9 +30,9 @@ func Status(c echo.Context) error {
 
 	time1 := time.Now()
 
-	dirs, err := ioutil.ReadDir(consts.DBDir)
+	dirs, err := os.ReadDir(consts.DBDir)
 	if err != nil {
-		return resp(c, 525, "ioutil.ReadDir(): "+err.Error())
+		return resp(c, 525, "os.ReadDir(): "+err.Error())
 	}
 
 	dirNames := make([]string, 0, len(dirs))
@@ -48,9 +49,9 @@ func Status(c echo.Context) error {
 
 	filesCount := 0
 	for _, dirName := range dirNames {
-		files, err := ioutil.ReadDir(consts.DBDir + dirName)
+		files, err := os.ReadDir(consts.DBDir + dirName)
 		if err != nil {
-			return resp(c, 525, "ioutil.ReadDir(): "+err.Error())
+			return resp(c, 525, "os.ReadDir(): "+err.Error())
 		}
 
 		filesCount += len(files)

@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -53,7 +52,7 @@ func getLock(path string) (*sync.RWMutex, error) {
 
 func Read(path string, model any) error {
 	return wrapLock(path, func() error {
-		data, err := ioutil.ReadFile(consts.DBDir + path)
+		data, err := os.ReadFile(consts.DBDir + path)
 		if err != nil {
 			return err
 		}
@@ -67,7 +66,7 @@ func Write(path string, model any) error {
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(consts.DBDir+path, data, consts.FilePermission)
+		return os.WriteFile(consts.DBDir+path, data, consts.FilePermission)
 	}, true)
 }
 
