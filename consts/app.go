@@ -23,6 +23,7 @@ const (
 var (
 	// adjust this value according to your memory size.
 	// bigger for better performance.
-	CacherMaxLength uint = 100
-	CookieSalt           = "nano-db"
+	CacherMaxLength  = 100
+	CacherActiveRate = 0.8
+	CookieSalt       = "nano-db"
 )

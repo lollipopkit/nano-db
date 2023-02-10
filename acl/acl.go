@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"git.lolli.tech/lollipopkit/nano-db/consts"
-	"git.lolli.tech/lollipopkit/nano-db/utils"
 	. "git.lolli.tech/lollipopkit/nano-db/json"
+	"git.lolli.tech/lollipopkit/nano-db/utils"
 )
 
 var (

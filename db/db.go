@@ -14,7 +14,7 @@ import (
 var (
 
 	// map[string]*sync.RWMutex : {"PATH": LOCK}
-	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
+	pathLockCacher *glc.Cacher
 
 	ErrLockConvert = errors.New("lock convert failed")
 )
@@ -25,16 +25,17 @@ func init() {
 	}
 }
 
+func InitCacher() {
+	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
+}
+
 func getLock(path string) (*sync.RWMutex, error) {
 	l, have := pathLockCacher.Get(path)
 	if !have {
 		// 防止pathLockCacher因为超出最大长度，而清理可能正在使用的锁
 		// 例如：有超过consts.CacherMaxLength个的进程同时读写
-		for {
-			if pathLockCacher.Len() < consts.CacherMaxLength {
-				break
-			}
-			time.Sleep(time.Millisecond * 100)
+		for pathLockCacher.Len() == consts.CacherMaxLength {
+			time.Sleep(time.Millisecond * 17)
 		}
 
 		lock := new(sync.RWMutex)

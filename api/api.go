@@ -12,14 +12,15 @@ import (
 	. "git.lolli.tech/lollipopkit/nano-db/acl"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/db"
-	"git.lolli.tech/lollipopkit/nano-db/logger"
 	. "git.lolli.tech/lollipopkit/nano-db/json"
+	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
 	"github.com/tidwall/gjson"
 )
 
 var (
-	cacher = glc.NewCacher(consts.CacherMaxLength * 100)
+	_duration    = time.Hour
+	dbDataCacher *glc.PartedCacher
 )
 
 const (
@@ -29,15 +30,21 @@ const (
 
 func init() {
 	go func() {
-		AclLock.Lock()
-		err := Acl.Load()
-		AclLock.Unlock()
+		for {
+			AclLock.Lock()
+			err := Acl.Load()
+			AclLock.Unlock()
 
-		if err != nil {
-			panic(err)
+			if err != nil {
+				panic(err)
+			}
+			time.Sleep(time.Minute)
 		}
-		time.Sleep(time.Minute)
 	}()
+}
+
+func InitCacher() {
+	dbDataCacher = glc.NewPartedElapsedCacher(consts.CacherMaxLength*100, consts.CacherActiveRate, _duration, _duration*24)
 }
 
 func Read(c echo.Context) error {
@@ -58,7 +65,7 @@ func Read(c echo.Context) error {
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
-	item, have := cacher.Get(p)
+	item, have := dbDataCacher.Get(p)
 	if have {
 		return resp(c, 200, item)
 	}
@@ -73,7 +80,7 @@ func Read(c echo.Context) error {
 		return resp(c, 521, "db.Read(): "+err.Error())
 	}
 
-	cacher.Set(p, content)
+	dbDataCacher.Set(p, content)
 
 	return resp(c, 200, content)
 }
@@ -115,7 +122,7 @@ func Write(c echo.Context) error {
 		return resp(c, 523, "db.Write(): "+err.Error())
 	}
 
-	cacher.Set(p, content)
+	dbDataCacher.Set(p, content)
 
 	return ok(c)
 }
@@ -146,7 +153,7 @@ func Delete(c echo.Context) error {
 		return resp(c, 524, "db.Delete(): "+err.Error())
 	}
 
-	cacher.Delete(p)
+	dbDataCacher.Delete(p)
 
 	return ok(c)
 }
@@ -221,13 +228,13 @@ func DeleteDB(c echo.Context) error {
 		return resp(c, 528, "os.RemoveAll(): "+err.Error())
 	}
 
-	for _, path := range cacher.Values() {
+	for _, path := range dbDataCacher.Values() {
 		p, ok := path.(string)
 		if !ok {
 			continue
 		}
 		if strings.HasPrefix(p, dbName+"/") {
-			cacher.Delete(path)
+			dbDataCacher.Delete(path)
 		}
 	}
 
@@ -251,13 +258,13 @@ func DeleteDir(c echo.Context) error {
 		return resp(c, 529, "os.RemoveAll(): "+err.Error())
 	}
 
-	for _, path := range cacher.Values() {
+	for _, path := range dbDataCacher.Values() {
 		p, ok := path.(string)
 		if !ok {
 			continue
 		}
 		if strings.HasPrefix(p, dbName+"/"+dir+"/") {
-			cacher.Delete(path)
+			dbDataCacher.Delete(path)
 		}
 	}
 
@@ -300,7 +307,7 @@ func SearchDir(c echo.Context) error {
 		var ok bool
 		var d any
 
-		d, ok = cacher.Get(path(dbName, dir, file.Name()))
+		d, ok = dbDataCacher.Get(path(dbName, dir, file.Name()))
 		if ok {
 			data, err = Json.Marshal(d)
 			if err != nil {
@@ -380,7 +387,7 @@ func SearchDB(c echo.Context) error {
 			var ok bool
 			var d any
 
-			d, ok = cacher.Get(path(dbName, dir.Name(), file.Name()))
+			d, ok = dbDataCacher.Get(path(dbName, dir.Name(), file.Name()))
 			if ok {
 				data, err = Json.Marshal(d)
 				if err != nil {

@@ -57,7 +57,7 @@ func Status(c echo.Context) error {
 		filesCount += len(files)
 	}
 
-	cacherLen := cacher.Len()
+	cacherLen := dbDataCacher.Len()
 
 	time2 := time.Now()
 

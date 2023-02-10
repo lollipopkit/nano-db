@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	pathFmt        = "%s/%s/%s"
+	pathFmt = "%s/%s/%s"
 )
 
 func resp(c echo.Context, code int, data any) error {
