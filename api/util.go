@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	. "git.lolli.tech/lollipopkit/nano-db/acl"
+	"git.lolli.tech/lollipopkit/nano-db/cfg"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
@@ -73,7 +73,7 @@ func diyEncrypt(pass string) string {
 }
 
 func generateCookieMd5(name string) string {
-	base64Str := encodeBase64(consts.CookieSalt + name + consts.CookieSalt2)
+	base64Str := encodeBase64(cfg.Cfg.Security.Salt + name + consts.CookieSalt2)
 	md5Hex := getMd5([]byte(base64Str))
 	return diyEncrypt(reverseString(hex2Str(md5Hex)))
 }
@@ -128,9 +128,7 @@ func checkPermission(c echo.Context, action, dbName, path string) bool {
 		return false
 	}
 
-	AclLock.RLock()
-	defer AclLock.RUnlock()
-	if !Acl.Can(dbName, userName) {
+	if !cfg.Acl.Can(dbName, userName) {
 		logger.W("[%s] user [%s] is trying access [%s]\n", action, userName, path)
 		return false
 	}

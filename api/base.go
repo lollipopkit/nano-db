@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	. "git.lolli.tech/lollipopkit/nano-db/acl"
+	"git.lolli.tech/lollipopkit/nano-db/cfg"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
@@ -42,7 +42,7 @@ func Status(c echo.Context) error {
 			logger.W("[api.Status] %s is not a dir\n", dbName)
 			continue
 		}
-		if Acl.Can(dbName, userName) {
+		if cfg.Acl.Can(dbName, userName) {
 			dirNames = append(dirNames, dbName)
 		}
 	}

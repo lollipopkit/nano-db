@@ -1,4 +1,4 @@
-package acl
+package cfg
 
 import (
 	"os"
@@ -6,17 +6,20 @@ import (
 
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	. "git.lolli.tech/lollipopkit/nano-db/json"
-	"git.lolli.tech/lollipopkit/nano-db/utils"
+	"github.com/lollipopkit/gommon/util"
 )
 
 var (
-	Acl     = &ACL{}
-	AclLock = &sync.RWMutex{}
+	Acl = &ACL{
+		Version: 1,
+		Rules:   []ACLRule{},
+	}
+	aclLock = &sync.RWMutex{}
 )
 
 type ACL struct {
-	Version int        `json:"ver"`
-	Rules   []*ACLRule `json:"rules"`
+	Version int       `json:"ver"`
+	Rules   []ACLRule `json:"rules"`
 }
 
 type ACLRule struct {
@@ -33,15 +36,12 @@ func (acl *ACL) Save() error {
 }
 
 func (acl *ACL) Load() error {
-	if !utils.IsExist(consts.ACLFile) {
+	aclLock.Lock()
+	defer aclLock.Unlock()
+	if !util.Exist(consts.ACLFile) {
 		err := os.MkdirAll(consts.SecretDir, consts.FilePermission)
 		if err != nil {
 			return err
-		}
-
-		acl = &ACL{
-			Version: 1,
-			Rules:   []*ACLRule{},
 		}
 
 		return acl.Save()
@@ -51,10 +51,13 @@ func (acl *ACL) Load() error {
 	if err != nil {
 		return err
 	}
+
 	return Json.Unmarshal(data, acl)
 }
 
 func (acl *ACL) UpdateRule(dbName, userName string) error {
+	aclLock.Lock()
+	defer aclLock.Unlock()
 	for i, rule := range acl.Rules {
 		if rule.UserName == userName {
 			for _, db := range rule.DBNames {
@@ -66,7 +69,7 @@ func (acl *ACL) UpdateRule(dbName, userName string) error {
 			return acl.Save()
 		}
 	}
-	acl.Rules = append(acl.Rules, &ACLRule{
+	acl.Rules = append(acl.Rules, ACLRule{
 		DBNames:  []string{dbName},
 		UserName: userName,
 	})
@@ -74,6 +77,8 @@ func (acl *ACL) UpdateRule(dbName, userName string) error {
 }
 
 func (acl *ACL) Can(dbName, userName string) bool {
+	aclLock.RLock()
+	defer aclLock.RUnlock()
 	for _, rule := range acl.Rules {
 		if rule.UserName == userName {
 			for _, db := range rule.DBNames {

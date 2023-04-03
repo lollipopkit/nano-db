@@ -2,7 +2,11 @@ module git.lolli.tech/lollipopkit/nano-db
 
 go 1.18
 
-require git.lolli.tech/lollipopkit/go-lru-cacher v0.0.0-20230210135819-6d53cc9ccf7d
+require (
+	git.lolli.tech/lollipopkit/go-lru-cacher v0.0.0-20230210135819-6d53cc9ccf7d
+	github.com/lollipopkit/gommon v0.0.11
+	golang.org/x/time v0.3.0
+)
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
@@ -10,7 +14,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
-	golang.org/x/time v0.3.0 // indirect
 )
 
 require (

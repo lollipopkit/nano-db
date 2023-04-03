@@ -7,12 +7,12 @@ import (
 	"time"
 
 	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
+	. "git.lolli.tech/lollipopkit/nano-db/cfg"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	. "git.lolli.tech/lollipopkit/nano-db/json"
 )
 
 var (
-
 	// map[string]*sync.RWMutex : {"PATH": LOCK}
 	pathLockCacher *glc.Cacher
 
@@ -26,15 +26,15 @@ func init() {
 }
 
 func InitCacher() {
-	pathLockCacher = glc.NewCacher(consts.CacherMaxLength)
+	pathLockCacher = glc.NewCacher(Cfg.Cache.MaxSize)
 }
 
 func getLock(path string) (*sync.RWMutex, error) {
 	l, have := pathLockCacher.Get(path)
 	if !have {
-		// 防止pathLockCacher因为超出最大长度，而清理可能正在使用的锁
-		// 例如：有超过consts.CacherMaxLength个的进程同时读写
-		for pathLockCacher.Len() == consts.CacherMaxLength {
+		// 防止 pathLockCacher 因为超出最大长度，而清理可能正在使用的锁
+		// 例如：有超过 MaxSize 个的进程同时读写
+		for pathLockCacher.Len() == Cfg.Cache.MaxSize {
 			time.Sleep(time.Millisecond * 17)
 		}
 

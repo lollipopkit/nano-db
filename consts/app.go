@@ -7,7 +7,7 @@ const (
 	LogDir    = ".log/"
 	SecretDir = ".sct/"
 	ACLFile   = SecretDir + "acl.json"
-	SaltFile  = SecretDir + "salt.txt"
+	CfgFile   = SecretDir + "cfg.json"
 
 	CookieSalt2   = "20001110"
 	CookieSignKey = "s"
@@ -18,12 +18,4 @@ const (
 
 	MaxIdLength    = 37
 	SaltDefaultLen = 17
-)
-
-var (
-	// adjust this value according to your memory size.
-	// bigger for better performance.
-	CacherMaxLength  = 100
-	CacherActiveRate = 0.8
-	CookieSalt       = "nano-db"
 )

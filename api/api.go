@@ -9,7 +9,7 @@ import (
 	"time"
 
 	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
-	. "git.lolli.tech/lollipopkit/nano-db/acl"
+	. "git.lolli.tech/lollipopkit/nano-db/cfg"
 	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"git.lolli.tech/lollipopkit/nano-db/db"
 	. "git.lolli.tech/lollipopkit/nano-db/json"
@@ -28,23 +28,8 @@ const (
 	emptyGJsonPath = "gjson path is empty"
 )
 
-func init() {
-	go func() {
-		for {
-			AclLock.Lock()
-			err := Acl.Load()
-			AclLock.Unlock()
-
-			if err != nil {
-				panic(err)
-			}
-			time.Sleep(time.Minute)
-		}
-	}()
-}
-
 func InitCacher() {
-	dbDataCacher = glc.NewPartedElapsedCacher(consts.CacherMaxLength*100, consts.CacherActiveRate, _duration, _duration*24)
+	dbDataCacher = glc.NewPartedElapsedCacher(Cfg.Cache.MaxSize*100, Cfg.Cache.ActiveRate, _duration, _duration*24)
 }
 
 func Read(c echo.Context) error {

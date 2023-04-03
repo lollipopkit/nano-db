@@ -1,8 +1,7 @@
 ## Nano DB
 一款以golang编写的轻量、非关系型、基于文件系统的数据库。  
 
-白话文：将数据按文件储存，再提供http接口来访问，因此可以适用于分布式服务（一台数据库服务器，多个后端服务器）。  
-
+白话文：将数据按文件储存，再提供http接口来访问。  
 
 ## 🔖 特点
 - 无需SQL语句：使用gjson与正则搜索匹配数据
@@ -22,8 +21,12 @@ Usage of ./nano-db:
         update acl rules with -d <dbname>
   -l int
         set the max length of cache (default 100)
+  -log
+        enable log
+  -r float
+        set the activeRate of cacher (0.0-1.0) (default 0.8)
   -u string
-        generate the cookie with -n <username>
+        generate the cookie with -u <username>
 ```
 
 #### 启动数据库
@@ -72,7 +75,7 @@ DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
 POST|`/{DB}`|搜索DB下所有文件|返回包含`gjson.Get(FILE,p).Exists()`为真的文件内容。如果正则`v`不为空，则会剔除`gjson.Result.Raw`不匹配的。body结构：`{"path":"","regex":""}`
 GET|`/{DB}/{DIR}`|获取DIR内所有FILE|获取DIR下所有文件的名称，并非DIR下所有数据
 DELETE|`/{DB}/{DIR}`|删除某DIR|并且删除DIR下所有FILE
-POST|`/{DB}/{DIR}`|搜索DIR下所有文件|返回包含`gjson.Get(FILE,p).Exists()`为真的文件内容。如果正则`v`不为空，则会剔除`gjson.Result.Raw`不匹配的。body结构：`{"path":"","regex":""}`
+POST|`/{DB}/{DIR}`|搜索DIR下所有文件|body结构：`{"path":"","regex":""}`。如果正则`v`为空，返回包含 `gjson.GetBytes(FILE,path).Exists()`(`FILE` 为 `DIR` 下文件的内容)，为真的文件内容。如果正则`v`不为空，则会剔除 `regexp.MatchString(regex, gjson.Result.Raw)` 不匹配的。
 GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
 POST|`/{DB}/{DIR}/{FILE}`|插入/更新|需要在body附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
