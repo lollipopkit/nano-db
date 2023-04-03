@@ -23,9 +23,6 @@ func init() {
 	if err := os.MkdirAll(consts.DBDir, consts.FilePermission); err != nil {
 		panic(err)
 	}
-}
-
-func InitCacher() {
 	pathLockCacher = glc.NewCacher(Cfg.Cache.MaxSize)
 }
 

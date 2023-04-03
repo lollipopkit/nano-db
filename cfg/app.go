@@ -31,6 +31,16 @@ var (
 	}
 )
 
+func init() {
+	err := Cfg.Load()
+	if err != nil {
+		panic("AppConfig.Load(): " + err.Error())
+	}
+	if Cfg.Cache.ActiveRate < 0 || Cfg.Cache.ActiveRate > 1 {
+		panic("invalid cache rate")
+	}
+}
+
 type AppConfig struct {
 	Addr     string         `json:"addr"`
 	Cache    CacheConfig    `json:"cache"`
@@ -62,14 +72,17 @@ func (c *AppConfig) Save() error {
 	if err != nil {
 		return errors.Join(ErrConfig, err)
 	}
-	return os.WriteFile(consts.CfgFile, bytes, consts.FilePermission)
+	if err = os.MkdirAll(consts.CfgDir, consts.FilePermission); err != nil {
+		return errors.Join(ErrConfig, err)
+	}
+	return os.WriteFile(consts.AppCfgFile, bytes, consts.FilePermission)
 }
 
 func (c *AppConfig) Load() error {
-	if !util.Exist(consts.CfgFile) {
+	if !util.Exist(consts.AppCfgFile) {
 		return c.Save()
 	}
-	bytes, err := os.ReadFile(consts.CfgFile)
+	bytes, err := os.ReadFile(consts.AppCfgFile)
 	if err != nil {
 		return errors.Join(ErrConfig, err)
 	}

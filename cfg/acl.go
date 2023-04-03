@@ -3,6 +3,7 @@ package cfg
 import (
 	"os"
 	"sync"
+	"time"
 
 	"github.com/lollipopkit/gommon/util"
 	"github.com/lollipopkit/nano-db/consts"
@@ -16,6 +17,18 @@ var (
 	}
 	aclLock = &sync.RWMutex{}
 )
+
+func init() {
+	go func() {
+		for {
+			err := Acl.Load()
+			if err != nil {
+				panic(err)
+			}
+			time.Sleep(time.Minute)
+		}
+	}()
+}
 
 type ACL struct {
 	Version int       `json:"ver"`
@@ -32,13 +45,13 @@ func (acl *ACL) Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(consts.ACLFile, data, consts.FilePermission)
+	return os.WriteFile(consts.AclCfgFile, data, consts.FilePermission)
 }
 
 func (acl *ACL) Load() error {
 	aclLock.Lock()
 	defer aclLock.Unlock()
-	if !util.Exist(consts.ACLFile) {
+	if !util.Exist(consts.AclCfgFile) {
 		err := os.MkdirAll(consts.CfgDir, consts.FilePermission)
 		if err != nil {
 			return err
@@ -47,7 +60,7 @@ func (acl *ACL) Load() error {
 		return acl.Save()
 	}
 
-	data, err := os.ReadFile(consts.ACLFile)
+	data, err := os.ReadFile(consts.AclCfgFile)
 	if err != nil {
 		return err
 	}

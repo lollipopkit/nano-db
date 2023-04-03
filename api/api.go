@@ -28,8 +28,13 @@ const (
 	emptyGJsonPath = "gjson path is empty"
 )
 
-func InitCacher() {
-	dbDataCacher = glc.NewPartedElapsedCacher(Cfg.Cache.MaxSize*100, Cfg.Cache.ActiveRate, _duration, _duration*24)
+func init() {
+	dbDataCacher = glc.NewPartedElapsedCacher(
+		Cfg.Cache.MaxSize*100, 
+		Cfg.Cache.ActiveRate, 
+		_duration, 
+		_duration*24,
+	)
 }
 
 func Read(c echo.Context) error {

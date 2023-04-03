@@ -3,23 +3,16 @@ package main
 import (
 	"flag"
 	"os"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/lollipopkit/nano-db/api"
 	. "github.com/lollipopkit/nano-db/cfg"
-	"github.com/lollipopkit/nano-db/db"
 	mid "github.com/lollipopkit/nano-db/middleware"
 )
 
 func main() {
 	parseCli()
-
-	initConfig()
-	initCacher()
-	initAcl()
-
 	startWeb()
 }
 
@@ -67,34 +60,4 @@ func startWeb() {
 	// Start server
 	e.HideBanner = true
 	e.Start(Cfg.Addr)
-}
-
-func initCacher() {
-	// Use these funcs to init Cacher
-	// or params for cacher will be ignored
-	// due to Golang `var init & func init()` sequence
-	api.InitCacher()
-	db.InitCacher()
-}
-
-func initAcl() {
-	go func() {
-		for {
-			err := Acl.Load()
-			if err != nil {
-				panic(err)
-			}
-			time.Sleep(time.Minute)
-		}
-	}()
-}
-
-func initConfig() {
-	err := Cfg.Load()
-	if err != nil {
-		panic("AppConfig.Load(): " + err.Error())
-	}
-	if Cfg.Cache.ActiveRate < 0 || Cfg.Cache.ActiveRate > 1 {
-		panic("invalid cache rate")
-	}
 }
