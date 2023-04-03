@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"os"
+	"regexp"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/lollipopkit/nano-db/api"
 	. "github.com/lollipopkit/nano-db/cfg"
-	mid "github.com/lollipopkit/nano-db/middleware"
 )
 
 func main() {
@@ -36,10 +36,34 @@ func startWeb() {
 	e := echo.New()
 
 	if Cfg.Log.Enable {
-		e.Use(mid.Logger)
+		if Cfg.Log.Format == "" {
+			e.Use(middleware.Logger())
+		} else {
+			skipRegList := make([]regexp.Regexp, 0, len(Cfg.Log.SkipRegExp))
+			for _, reg := range Cfg.Log.SkipRegExp {
+				skipRegList = append(skipRegList, *regexp.MustCompile(reg))
+			}
+
+			e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+				Format:  Cfg.Log.Format,
+				Skipper: func (context echo.Context) bool {
+					url := context.Request().URL.Path
+					for _, reg := range skipRegList {
+						if reg.MatchString(url) {
+							return true
+						}
+					}
+					return false
+				},
+			}))
+		}
 	}
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(Cfg.Security.RateLimit)))
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: Cfg.Security.CORSList,
+	}))
+	e.Use(middleware.BodyLimit(Cfg.Security.BodyLimit))
 
 	// Routes
 	e.HEAD("/", api.Alive)
