@@ -14,7 +14,9 @@ import (
 
 func main() {
 	parseCli()
-	startWeb()
+	if err := startWeb(); err != nil {
+		term.Err(err.Error())
+	}
 }
 
 func parseCli() {
@@ -33,7 +35,7 @@ func parseCli() {
 	}
 }
 
-func startWeb() {
+func startWeb() error {
 	e := echo.New()
 
 	if Cfg.Log.Enable {
@@ -84,5 +86,5 @@ func startWeb() {
 
 	// Start server
 	e.HideBanner = true
-	e.Start(Cfg.Addr)
+	return e.Start(Cfg.Addr)
 }
