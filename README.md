@@ -37,11 +37,11 @@ Usage of ./nano-db:
 
 指定用户成为指定数据库的唯一管理员  
 
-可以打开`.cfg/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
+可以打开 `.cfg/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel"]}]}
 ```
-如果想给用户`novel`添加`test`数据库的权限，可以如下修改：
+如果想给用户 `novel` 添加 `test` 数据库的权限，可以如下修改：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel","test"]}]}
 ```
@@ -63,10 +63,10 @@ HEAD|`/`|查看数据库是否存活|唯一不需要附带cookie的接口，可�
 GET|`/`|查看总状态|会输出有多少数据库、DIR、内存缓存项及获取时间
 GET|`/{DB}`|获取DB内所有DIR|会返回所有DIR的名称，并非DB内所有DIR的数据
 DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
-POST|`/{DB}`|搜索DB下所有文件|返回包含`gjson.Get(FILE,p).Exists()`为真的文件内容。如果正则`v`不为空，则会剔除`gjson.Result.Raw`不匹配的。body结构：`{"path":"","regex":""}`
+POST|`/{DB}`|搜索DB下所有文件|返回包含 `gjson.Get(FILE,p).Exists()` 为真的文件内容。如果正则 `v` 不为空，则会剔除 `gjson.Result.Raw` 不匹配的。body结构：`{"path":"","regex":""}`
 GET|`/{DB}/{DIR}`|获取DIR内所有FILE|获取DIR下所有文件的名称，并非DIR下所有数据
 DELETE|`/{DB}/{DIR}`|删除某DIR|并且删除DIR下所有FILE
-POST|`/{DB}/{DIR}`|搜索DIR下所有文件|body结构：`{"path":"","regex":""}`。如果正则`v`为空，返回包含 `gjson.GetBytes(FILE,path).Exists()`(`FILE` 为 `DIR` 下文件的内容)，为真的文件内容。如果正则`v`不为空，则会剔除 `regexp.MatchString(regex, gjson.Result.Raw)` 不匹配的。
+POST|`/{DB}/{DIR}`|搜索DIR下所有文件|body结构：`{"path":"","regex":""}`。如果正则 `v` 为空，返回包含 `gjson.GetBytes(FILE,path).Exists()` (`FILE` 为 `DIR` 下文件的内容)，为真的文件内容。如果正则 `v` 不为空，则会剔除 `regexp.MatchString(regex, gjson.Result.Raw)` 不匹配的。
 GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
 POST|`/{DB}/{DIR}/{FILE}`|插入/更新|需要在body附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
@@ -77,7 +77,7 @@ DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
 
 ## 🔒 安全
 请妥善保管你的cookie，不要将其发送给他人。  
-如果发现cookie被盗，请更改`.sct/salt.txt`的内容。  
+如果发现cookie被盗，请更改 `.cfg/app.json` 内的 `Salt`。  
 随后重新生成cookie，并使用新的cookie访问数据库。
 
 ## 🔑 License
