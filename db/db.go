@@ -7,9 +7,9 @@ import (
 	"time"
 
 	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
-	. "git.lolli.tech/lollipopkit/nano-db/cfg"
-	"git.lolli.tech/lollipopkit/nano-db/consts"
-	. "git.lolli.tech/lollipopkit/nano-db/json"
+	. "github.com/lollipopkit/nano-db/cfg"
+	"github.com/lollipopkit/nano-db/consts"
+	. "github.com/lollipopkit/nano-db/json"
 )
 
 var (

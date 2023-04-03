@@ -1,4 +1,4 @@
-module git.lolli.tech/lollipopkit/nano-db
+module github.com/lollipopkit/nano-db
 
 go 1.18
 
@@ -9,6 +9,9 @@ require (
 )
 
 require (
+	atomicgo.dev/cursor v0.1.1 // indirect
+	atomicgo.dev/keyboard v0.2.9 // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

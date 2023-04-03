@@ -10,29 +10,20 @@
 - RESTful接口：HTTP协议，方便使用
 - 缓存：查询结果缓存，提高查询效率
 - 权限管理：ACL，每个用户权限分离
-- SDK：目前支持 [go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)
+- SDK：目前支持 [go](https://github.com/lollipopkit/nano-db-sdk-go)
 
 ## 📖 使用
 ```sh
 Usage of ./nano-db:
-  -a string
-        specific the addr to listen (default "0.0.0.0:3777")
   -d string
         update acl rules with -d <dbname>
-  -l int
-        set the max length of cache (default 100)
-  -log
-        enable log
-  -r float
-        set the activeRate of cacher (0.0-1.0) (default 0.8)
   -u string
         generate the cookie with -u <username>
 ```
 
 #### 启动数据库
 `./nano-db`
-可选`-a`参数指定监听地址，默认为`0.0.0.0:3777`  
-可选`-l`参数指定缓存的最大长度，默认为100
+可以编辑 `.sct/cfg.json` 修改配置
 
 #### 获取cookie
 `./nano-db -u {userName}`  
@@ -46,7 +37,7 @@ Usage of ./nano-db:
 
 指定用户成为指定数据库的唯一管理员  
 
-可以打开`.sct/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
+可以打开`.cfg/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
 ```json
 {"ver":1,"rules":[{"user":"novel","db":["novel"]}]}
 ```
@@ -60,7 +51,7 @@ Usage of ./nano-db:
 
 ### 🔨 数据库操作
 操作数据库可以选择：
-- SDK（[go](https://git.lolli.tech/lollipopkit/nano-db-sdk-go)，其他sdk待开发）
+- SDK（[go](https://github.com/lollipopkit/nano-db-sdk-go)，其他sdk待开发）
 - HTTP接口
 
 接下来是http接口的使用，sdk文档请前往sdk查看。

@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
-	"git.lolli.tech/lollipopkit/nano-db/cfg"
-	"git.lolli.tech/lollipopkit/nano-db/consts"
-	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
+	"github.com/lollipopkit/gommon/term"
+	"github.com/lollipopkit/nano-db/cfg"
+	"github.com/lollipopkit/nano-db/consts"
 )
 
 const (
@@ -23,7 +23,7 @@ func Status(c echo.Context) error {
 	loggedIn, userName := accountVerify(c)
 	if !loggedIn {
 		if userName != consts.AnonymousUser {
-			logger.W("[api.Status] user %s is trying to get\n", userName)
+			term.Warn("[api.Status] user %s is trying to get\n", userName)
 		}
 		return permissionDenied(c)
 	}
@@ -39,7 +39,7 @@ func Status(c echo.Context) error {
 	for _, d := range dirs {
 		dbName := d.Name()
 		if !d.IsDir() {
-			logger.W("[api.Status] %s is not a dir\n", dbName)
+			term.Warn("[api.Status] %s is not a dir\n", dbName)
 			continue
 		}
 		if cfg.Acl.Can(dbName, userName) {

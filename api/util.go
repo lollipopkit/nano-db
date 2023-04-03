@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"strings"
 
-	"git.lolli.tech/lollipopkit/nano-db/cfg"
-	"git.lolli.tech/lollipopkit/nano-db/consts"
-	"git.lolli.tech/lollipopkit/nano-db/logger"
 	"github.com/labstack/echo/v4"
+	"github.com/lollipopkit/gommon/term"
+	"github.com/lollipopkit/nano-db/cfg"
+	"github.com/lollipopkit/nano-db/consts"
 )
 
 const (
@@ -47,7 +47,7 @@ func accountVerify(c echo.Context) (bool, string) {
 	if err == nil && cookieSign.Value == generateCookieMd5(userName) {
 		return true, userName
 	}
-	logger.W("[accountVerify] new hack user [%s]", userName)
+	term.Warn("[accountVerify] new hack user [%s]", userName)
 	return false, consts.HackUser
 }
 
@@ -129,7 +129,7 @@ func checkPermission(c echo.Context, action, dbName, path string) bool {
 	}
 
 	if !cfg.Acl.Can(dbName, userName) {
-		logger.W("[%s] user [%s] is trying access [%s]\n", action, userName, path)
+		term.Warn("[%s] user [%s] is trying access [%s]\n", action, userName, path)
 		return false
 	}
 	return true

@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"git.lolli.tech/lollipopkit/nano-db/consts"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/lollipopkit/nano-db/consts"
 )
 
 var Logger = middleware.LoggerWithConfig(middleware.LoggerConfig{

@@ -5,16 +5,16 @@ import (
 	"math/rand"
 	"os"
 
-	"git.lolli.tech/lollipopkit/nano-db/consts"
-	. "git.lolli.tech/lollipopkit/nano-db/json"
 	"github.com/lollipopkit/gommon/util"
+	"github.com/lollipopkit/nano-db/consts"
+	. "github.com/lollipopkit/nano-db/json"
 	"golang.org/x/time/rate"
 )
 
 var (
 	ErrConfig = errors.New("config file error")
 
-	Cfg = &Config{
+	Cfg = &AppConfig{
 		Addr: ":3770",
 		Cache: CacheConfig{
 			MaxSize:    100,
@@ -31,7 +31,7 @@ var (
 	}
 )
 
-type Config struct {
+type AppConfig struct {
 	Addr     string         `json:"addr"`
 	Cache    CacheConfig    `json:"cache"`
 	Log      LogConfig      `json:"log"`
@@ -57,7 +57,7 @@ type LogConfig struct {
 	Debug  bool `json:"debug"`
 }
 
-func (c *Config) Save() error {
+func (c *AppConfig) Save() error {
 	bytes, err := Json.Marshal(c)
 	if err != nil {
 		return errors.Join(ErrConfig, err)
@@ -65,7 +65,7 @@ func (c *Config) Save() error {
 	return os.WriteFile(consts.CfgFile, bytes, consts.FilePermission)
 }
 
-func (c *Config) Load() error {
+func (c *AppConfig) Load() error {
 	if !util.Exist(consts.CfgFile) {
 		return c.Save()
 	}

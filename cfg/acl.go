@@ -4,9 +4,9 @@ import (
 	"os"
 	"sync"
 
-	"git.lolli.tech/lollipopkit/nano-db/consts"
-	. "git.lolli.tech/lollipopkit/nano-db/json"
 	"github.com/lollipopkit/gommon/util"
+	"github.com/lollipopkit/nano-db/consts"
+	. "github.com/lollipopkit/nano-db/json"
 )
 
 var (
@@ -39,7 +39,7 @@ func (acl *ACL) Load() error {
 	aclLock.Lock()
 	defer aclLock.Unlock()
 	if !util.Exist(consts.ACLFile) {
-		err := os.MkdirAll(consts.SecretDir, consts.FilePermission)
+		err := os.MkdirAll(consts.CfgDir, consts.FilePermission)
 		if err != nil {
 			return err
 		}

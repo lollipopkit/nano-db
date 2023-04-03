@@ -5,12 +5,12 @@ import (
 	"os"
 	"time"
 
-	"git.lolli.tech/lollipopkit/nano-db/api"
-	. "git.lolli.tech/lollipopkit/nano-db/cfg"
-	"git.lolli.tech/lollipopkit/nano-db/db"
-	mid "git.lolli.tech/lollipopkit/nano-db/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/lollipopkit/nano-db/api"
+	. "github.com/lollipopkit/nano-db/cfg"
+	"github.com/lollipopkit/nano-db/db"
+	mid "github.com/lollipopkit/nano-db/middleware"
 )
 
 func main() {
@@ -31,7 +31,6 @@ func parseCli() {
 	// generate cookie & update acl rules
 	if *userName != "" {
 		if *dbName == "" {
-			println(Cfg.Security.Salt)
 			println("[Cookie]\n ", api.GenCookie(*userName))
 		} else {
 			UpdateAcl(userName, dbName)

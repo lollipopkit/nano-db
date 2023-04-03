@@ -3,11 +3,11 @@ package consts
 const (
 	FilePermission = 0770
 
-	DBDir     = ".db/"
-	LogDir    = ".log/"
-	SecretDir = ".sct/"
-	ACLFile   = SecretDir + "acl.json"
-	CfgFile   = SecretDir + "cfg.json"
+	DBDir   = ".db/"
+	LogDir  = ".log/"
+	CfgDir  = ".cfg/"
+	ACLFile = CfgDir + "acl.json"
+	CfgFile = CfgDir + "app.json"
 
 	CookieSalt2   = "20001110"
 	CookieSignKey = "s"
