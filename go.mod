@@ -4,11 +4,11 @@ go 1.18
 
 require (
 	github.com/lollipopkit/go-lru-cacher v0.0.0-20230403101110-65c8a1066bd9
-	github.com/lollipopkit/gommon v0.0.11
+	github.com/lollipopkit/gommon v0.0.12
 	golang.org/x/time v0.3.0
 )
 
-replace github.com/lollipopkit/gommon => ../go-common
+// replace github.com/lollipopkit/gommon => ../go-common
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect

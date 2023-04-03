@@ -38,8 +38,8 @@ github.com/labstack/gommon v0.4.0 h1:y7cvthEAEbU0yHOf4axH8ZG2NH8knB9iNSoTO8dyIk8
 github.com/labstack/gommon v0.4.0/go.mod h1:uW6kP17uPlLJsD3ijUYn3/M5bAxtlZhMI6m3MFxTMTM=
 github.com/lollipopkit/go-lru-cacher v0.0.0-20230403101110-65c8a1066bd9 h1:gTT604UJXeZIObO8G3zgNuSYCUNFLnuPp1TPgqRPxU4=
 github.com/lollipopkit/go-lru-cacher v0.0.0-20230403101110-65c8a1066bd9/go.mod h1:rrAvZmWSaO+yh8UtsK23Qf8w3gxfdTWWODLowVOnJVY=
-github.com/lollipopkit/gommon v0.0.11 h1:4PghuSAMKOzHLiTPEaqoUZAjI1yeqaVCmfq2kwt3JMs=
-github.com/lollipopkit/gommon v0.0.11/go.mod h1:DEnIxhHmPQjDSkKFDxwX6oFxMjlHd87G+Dt7U4ZUyRs=
+github.com/lollipopkit/gommon v0.0.12 h1:gwwyqL9GKs4/dnmMx1QHoK0yPauEAyOdIiNkRYx/4hw=
+github.com/lollipopkit/gommon v0.0.12/go.mod h1:DEnIxhHmPQjDSkKFDxwX6oFxMjlHd87G+Dt7U4ZUyRs=
 github.com/mattn/go-colorable v0.1.11/go.mod h1:u5H1YNBxpqRaxsYJYSkiCWKzEfiAb1Gb520KVy5xxl4=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
