@@ -23,7 +23,7 @@ Usage of ./nano-db:
 
 #### 启动数据库
 `./nano-db`
-可以编辑 `.sct/cfg.json` 修改配置
+可以编辑 `.cfg/app.json` 修改配置
 
 #### 获取cookie
 `./nano-db -u {userName}`  

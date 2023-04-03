@@ -19,7 +19,7 @@ def pull():
 
 def build():
     print('[building...]')
-    code = os.system('/usr/local/go/bin/go build')
+    code = os.system('go build')
     return code == 0
 
 

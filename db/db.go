@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
+	glc "github.com/lollipopkit/go-lru-cacher"
 	. "github.com/lollipopkit/nano-db/cfg"
 	"github.com/lollipopkit/nano-db/consts"
 	. "github.com/lollipopkit/nano-db/json"

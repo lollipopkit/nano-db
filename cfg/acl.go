@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lollipopkit/gommon/term"
 	"github.com/lollipopkit/gommon/util"
 	"github.com/lollipopkit/nano-db/consts"
 	. "github.com/lollipopkit/nano-db/json"
@@ -106,12 +107,10 @@ func (acl *ACL) Can(dbName, userName string) bool {
 }
 
 func UpdateAcl(userName, dbName *string) {
-	print("[ACL]\n  ")
 	err := Acl.UpdateRule(*dbName, *userName)
-
 	if err != nil {
-		println("acl update rule: " + err.Error())
+		term.Err("acl update rule: " + err.Error())
 	} else {
-		println("acl update rule: success")
+		term.Suc("acl update rule: success")
 	}
 }

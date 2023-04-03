@@ -41,14 +41,17 @@ func accountVerify(c echo.Context) (bool, string) {
 	cookieSign, errSign := c.Cookie(consts.CookieSignKey)
 	cookieName, errName := c.Cookie(consts.CookieNameKey)
 	if errSign != nil || errName != nil {
-		return false, consts.AnonymousUser
+		return false, ""
 	}
 	userName, err := decodeBase64(cookieName.Value)
+	if userName == "" {
+		return false, ""
+	}
 	if err == nil && cookieSign.Value == generateCookieMd5(userName) {
 		return true, userName
 	}
-	term.Warn("[accountVerify] new hack user [%s]", userName)
-	return false, consts.HackUser
+	term.Warn("[accountVerify] hack user [%s]", userName)
+	return false, ""
 }
 
 func encodeBase64(name string) string {
@@ -87,8 +90,8 @@ func reverseString(s string) string {
 }
 
 func GenCookie(userName string) string {
-	if userName == consts.AnonymousUser || userName == consts.HackUser {
-		return "username cant be \"" + userName + "\", its a inner user"
+	if userName == "" {
+		return "username cant be '" + userName + "'"
 	}
 	return fmt.Sprintf("n=%s; s=%s", encodeBase64(userName), generateCookieMd5(userName))
 }
@@ -129,7 +132,7 @@ func checkPermission(c echo.Context, action, dbName, path string) bool {
 	}
 
 	if !cfg.Acl.Can(dbName, userName) {
-		term.Warn("[%s] user [%s] is trying access [%s]\n", action, userName, path)
+		term.Warn("[%s] user [%s] is trying access [%s]", action, userName, path)
 		return false
 	}
 	return true

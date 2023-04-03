@@ -1,5 +1,7 @@
 package consts
 
+import "github.com/lollipopkit/gommon/term"
+
 const (
 	FilePermission = 0770
 
@@ -13,9 +15,10 @@ const (
 	CookieSignKey = "s"
 	CookieNameKey = "n"
 
-	AnonymousUser = "anonymous"
-	HackUser      = "hack"
-
 	MaxIdLength    = 37
 	SaltDefaultLen = 17
 )
+
+func init() {
+	term.SetLog(LogDir, FilePermission, true)
+}

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	glc "git.lolli.tech/lollipopkit/go-lru-cacher"
 	"github.com/labstack/echo/v4"
+	glc "github.com/lollipopkit/go-lru-cacher"
 	"github.com/lollipopkit/gommon/term"
 	. "github.com/lollipopkit/nano-db/cfg"
 	"github.com/lollipopkit/nano-db/consts"
@@ -30,9 +30,9 @@ const (
 
 func init() {
 	dbDataCacher = glc.NewPartedElapsedCacher(
-		Cfg.Cache.MaxSize*100, 
-		Cfg.Cache.ActiveRate, 
-		_duration, 
+		Cfg.Cache.MaxSize*100,
+		Cfg.Cache.ActiveRate,
+		_duration,
 		_duration*24,
 	)
 }
@@ -51,7 +51,7 @@ func Read(c echo.Context) error {
 	}
 
 	if err := verifyParams([]string{dbName, dir, file}); err != nil {
-		term.Warn("[api.Write] %s is not valid: %s\n", p, err.Error())
+		term.Warn("[api.Write] %s is not valid: %s", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
@@ -64,7 +64,7 @@ func Read(c echo.Context) error {
 	err := db.Read(p, &content)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			term.Err("[api.Read] db.Read(): %s\n", err.Error())
+			term.Err("[api.Read] db.Read(): %s", err.Error())
 		}
 
 		return resp(c, 521, "db.Read(): "+err.Error())
@@ -89,26 +89,26 @@ func Write(c echo.Context) error {
 	}
 
 	if err := verifyParams([]string{dbName, dir, file}); err != nil {
-		term.Warn("[api.Write] %s is not valid: %s\n", p, err.Error())
+		term.Warn("[api.Write] %s is not valid: %s", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
 	var content any
 	err := c.Bind(&content)
 	if err != nil {
-		term.Err("[api.Write] c.Bind(): %s\n", err.Error())
+		term.Err("[api.Write] c.Bind(): %s", err.Error())
 		return resp(c, 522, "c.Bind(): "+err.Error())
 	}
 
 	err = os.MkdirAll(consts.DBDir+dbName+"/"+dir, consts.FilePermission)
 	if err != nil {
-		term.Err("[api.Write] os.MkdirAll(): %s\n", err.Error())
+		term.Err("[api.Write] os.MkdirAll(): %s", err.Error())
 		return resp(c, 523, "os.MkdirAll(): "+err.Error())
 	}
 
 	err = db.Write(p, content)
 	if err != nil {
-		term.Err("[api.Write] db.Write(): %s\n", err.Error())
+		term.Err("[api.Write] db.Write(): %s", err.Error())
 		return resp(c, 523, "db.Write(): "+err.Error())
 	}
 
@@ -131,14 +131,14 @@ func Delete(c echo.Context) error {
 	}
 
 	if err := verifyParams([]string{dbName, dir, file}); err != nil {
-		term.Warn("[api.Write] %s is not valid: %s\n", p, err.Error())
+		term.Warn("[api.Write] %s is not valid: %s", p, err.Error())
 		return resp(c, 525, fmt.Sprintf("%s is not valid: %s", p, err.Error()))
 	}
 
 	err := db.Delete(p)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			term.Err("[api.Delete] db.Delete(): %s\n", err.Error())
+			term.Err("[api.Delete] db.Delete(): %s", err.Error())
 		}
 		return resp(c, 524, "db.Delete(): "+err.Error())
 	}
@@ -162,7 +162,7 @@ func Files(c echo.Context) error {
 
 	files, err := os.ReadDir(p)
 	if err != nil {
-		term.Err("[api.IDs] os.ReadDir(): %s\n", err.Error())
+		term.Err("[api.IDs] os.ReadDir(): %s", err.Error())
 		return resp(c, 526, "os.ReadDir(): "+err.Error())
 	}
 
@@ -188,7 +188,7 @@ func Dirs(c echo.Context) error {
 
 	dirs, err := os.ReadDir(consts.DBDir + dbName)
 	if err != nil {
-		term.Err("[api.Dirs] os.ReadDir(): %s\n", err.Error())
+		term.Err("[api.Dirs] os.ReadDir(): %s", err.Error())
 		return resp(c, 527, "os.ReadDir(): "+err.Error())
 	}
 
@@ -214,7 +214,7 @@ func DeleteDB(c echo.Context) error {
 
 	err := os.RemoveAll(consts.DBDir + dbName)
 	if err != nil {
-		term.Err("[api.DeleteDB] os.RemoveAll(): %s\n", err.Error())
+		term.Err("[api.DeleteDB] os.RemoveAll(): %s", err.Error())
 		return resp(c, 528, "os.RemoveAll(): "+err.Error())
 	}
 
@@ -244,7 +244,7 @@ func DeleteDir(c echo.Context) error {
 
 	err := os.RemoveAll(consts.DBDir + dbName + "/" + dir)
 	if err != nil {
-		term.Err("[api.DeleteDir] os.RemoveAll(): %s\n", err.Error())
+		term.Err("[api.DeleteDir] os.RemoveAll(): %s", err.Error())
 		return resp(c, 529, "os.RemoveAll(): "+err.Error())
 	}
 
@@ -276,7 +276,7 @@ func SearchDir(c echo.Context) error {
 	searchReq := new(SearchReq)
 	err := c.Bind(searchReq)
 	if err != nil {
-		term.Err("[api.SearchDir] c.Bind(): %s\n", err.Error())
+		term.Err("[api.SearchDir] c.Bind(): %s", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
 	}
 
@@ -286,7 +286,7 @@ func SearchDir(c echo.Context) error {
 
 	files, err := os.ReadDir(p)
 	if err != nil {
-		term.Err("[api.SearchDir] os.ReadDir(): %s\n", err.Error())
+		term.Err("[api.SearchDir] os.ReadDir(): %s", err.Error())
 		return resp(c, 530, "os.ReadDir(): "+err.Error())
 	}
 
@@ -301,18 +301,18 @@ func SearchDir(c echo.Context) error {
 		if ok {
 			data, err = Json.Marshal(d)
 			if err != nil {
-				term.Err("[api.SearchDir] JsonMarshal(): %s\n", err.Error())
+				term.Err("[api.SearchDir] JsonMarshal(): %s", err.Error())
 				continue
 			}
 		} else {
 			data, err = os.ReadFile(p + file.Name())
 			if err != nil {
-				term.Err("[api.SearchDir] os.ReadFile(): %s\n", err.Error())
+				term.Err("[api.SearchDir] os.ReadFile(): %s", err.Error())
 				continue
 			}
 			err = Json.Unmarshal(data, &d)
 			if err != nil {
-				term.Err("[api.SearchDir] JsonUnmarshal(): %s\n", err.Error())
+				term.Err("[api.SearchDir] JsonUnmarshal(): %s", err.Error())
 				continue
 			}
 		}
@@ -346,7 +346,7 @@ func SearchDB(c echo.Context) error {
 	searchReq := new(SearchReq)
 	err := c.Bind(searchReq)
 	if err != nil {
-		term.Err("[api.SearchDB] c.Bind(): %s\n", err.Error())
+		term.Err("[api.SearchDB] c.Bind(): %s", err.Error())
 		return resp(c, 530, "c.Bind(): "+err.Error())
 	}
 
@@ -357,7 +357,7 @@ func SearchDB(c echo.Context) error {
 	p := consts.DBDir + dbName + "/"
 	dirs, err := os.ReadDir(p)
 	if err != nil {
-		term.Err("[api.SearchDB] os.ReadDir(): %s\n", err.Error())
+		term.Err("[api.SearchDB] os.ReadDir(): %s", err.Error())
 		return resp(c, 530, "os.ReadDir(): "+err.Error())
 	}
 
@@ -368,7 +368,7 @@ func SearchDB(c echo.Context) error {
 		}
 		files, err := os.ReadDir(p + dir.Name() + "/")
 		if err != nil {
-			term.Err("[api.SearchDB] os.ReadDir(): %s\n", err.Error())
+			term.Err("[api.SearchDB] os.ReadDir(): %s", err.Error())
 			continue
 		}
 		for _, file := range files {
@@ -381,18 +381,18 @@ func SearchDB(c echo.Context) error {
 			if ok {
 				data, err = Json.Marshal(d)
 				if err != nil {
-					term.Err("[api.SearchDB] JsonMarshal(): %s\n", err.Error())
+					term.Err("[api.SearchDB] JsonMarshal(): %s", err.Error())
 					continue
 				}
 			} else {
 				data, err = os.ReadFile(p + dir.Name() + "/" + file.Name())
 				if err != nil {
-					term.Err("[api.SearchDB] os.ReadFile(): %s\n", err.Error())
+					term.Err("[api.SearchDB] os.ReadFile(): %s", err.Error())
 					continue
 				}
 				err = Json.Unmarshal(data, &d)
 				if err != nil {
-					term.Err("[api.SearchDB] JsonUnmarshal(): %s\n", err.Error())
+					term.Err("[api.SearchDB] JsonUnmarshal(): %s", err.Error())
 					continue
 				}
 			}

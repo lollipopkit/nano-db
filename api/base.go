@@ -22,8 +22,8 @@ func Alive(c echo.Context) error {
 func Status(c echo.Context) error {
 	loggedIn, userName := accountVerify(c)
 	if !loggedIn {
-		if userName != consts.AnonymousUser {
-			term.Warn("[api.Status] user %s is trying to get\n", userName)
+		if userName != "" {
+			term.Warn("[api.Status] user %s is trying to get status", userName)
 		}
 		return permissionDenied(c)
 	}
@@ -39,7 +39,7 @@ func Status(c echo.Context) error {
 	for _, d := range dirs {
 		dbName := d.Name()
 		if !d.IsDir() {
-			term.Warn("[api.Status] %s is not a dir\n", dbName)
+			term.Warn("[api.Status] %s is not a dir", dbName)
 			continue
 		}
 		if cfg.Acl.Can(dbName, userName) {
