@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/lollipopkit/gommon/util"
+	"github.com/lollipopkit/gommon/sys"
 	"github.com/lollipopkit/nano-db/consts"
 	. "github.com/lollipopkit/nano-db/json"
 	"golang.org/x/time/rate"
@@ -107,7 +107,7 @@ func (c *AppConfig) Save() error {
 }
 
 func (c *AppConfig) Load() error {
-	if !util.Exist(consts.AppCfgFile) {
+	if !sys.Exist(consts.AppCfgFile) {
 		return c.Save()
 	}
 	bytes, err := os.ReadFile(consts.AppCfgFile)

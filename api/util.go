@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/lollipopkit/gommon/term"
+	"github.com/lollipopkit/gommon/log"
 	"github.com/lollipopkit/nano-db/cfg"
 	"github.com/lollipopkit/nano-db/consts"
 )
@@ -50,7 +50,7 @@ func accountVerify(c echo.Context) (bool, string) {
 	if err == nil && cookieSign.Value == generateCookieMd5(userName) {
 		return true, userName
 	}
-	term.Warn("[accountVerify] hack user [%s]", userName)
+	log.Warn("[accountVerify] hack user [%s]", userName)
 	return false, ""
 }
 
@@ -132,7 +132,7 @@ func checkPermission(c echo.Context, action, dbName, path string) bool {
 	}
 
 	if !cfg.Acl.Can(dbName, userName) {
-		term.Warn("[%s] user [%s] is trying access [%s]", action, userName, path)
+		log.Warn("[%s] user [%s] is trying access [%s]", action, userName, path)
 		return false
 	}
 	return true

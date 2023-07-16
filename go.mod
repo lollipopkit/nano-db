@@ -1,19 +1,16 @@
 module github.com/lollipopkit/nano-db
 
-go 1.18
+go 1.20
 
 require (
 	github.com/lollipopkit/go-lru-cacher v0.0.0-20230403101110-65c8a1066bd9
-	github.com/lollipopkit/gommon v0.0.12
+	github.com/lollipopkit/gommon v0.4.0
 	golang.org/x/time v0.3.0
 )
 
 // replace github.com/lollipopkit/gommon => ../go-common
 
 require (
-	atomicgo.dev/cursor v0.1.1 // indirect
-	atomicgo.dev/keyboard v0.2.9 // indirect
-	github.com/containerd/console v1.0.3 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

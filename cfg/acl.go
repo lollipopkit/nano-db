@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lollipopkit/gommon/term"
-	"github.com/lollipopkit/gommon/util"
+	"github.com/lollipopkit/gommon/log"
+	"github.com/lollipopkit/gommon/sys"
 	"github.com/lollipopkit/nano-db/consts"
 	. "github.com/lollipopkit/nano-db/json"
 )
@@ -52,7 +52,7 @@ func (acl *ACL) Save() error {
 func (acl *ACL) Load() error {
 	aclLock.Lock()
 	defer aclLock.Unlock()
-	if !util.Exist(consts.AclCfgFile) {
+	if !sys.Exist(consts.AclCfgFile) {
 		err := os.MkdirAll(consts.CfgDir, consts.FilePermission)
 		if err != nil {
 			return err
@@ -109,8 +109,8 @@ func (acl *ACL) Can(dbName, userName string) bool {
 func UpdateAcl(userName, dbName *string) {
 	err := Acl.UpdateRule(*dbName, *userName)
 	if err != nil {
-		term.Err("acl update rule: " + err.Error())
+		log.Err("acl update rule: " + err.Error())
 	} else {
-		term.Suc("acl update rule: success")
+		log.Suc("acl update rule: success")
 	}
 }

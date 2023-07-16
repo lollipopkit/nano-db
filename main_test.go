@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"testing"
 
-	"github.com/lollipopkit/gommon/util"
+	"github.com/lollipopkit/gommon/http"
 )
 
 const (
@@ -20,7 +20,7 @@ var (
 )
 
 func TestAlive(t *testing.T) {
-	_, code, err := util.HttpDo("HEAD", baseUrl, nil, nil)
+	_, code, err := http.Do("HEAD", baseUrl, nil, nil)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func TestAlive(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	body, code, err := util.HttpDo("GET", baseUrl, nil, headers)
+	body, code, err := http.Do("GET", baseUrl, nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -36,7 +36,7 @@ func TestStatus(t *testing.T) {
 }
 
 func TestDir(t *testing.T) {
-	body, code, err := util.HttpDo("GET", baseUrl + "novel", nil, headers)
+	body, code, err := http.Do("GET", baseUrl + "novel", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestDir(t *testing.T) {
 }
 
 func TestFiles(t *testing.T) {
-	body, code, err := util.HttpDo("GET", baseUrl + "novel/3382", nil, headers)
+	body, code, err := http.Do("GET", baseUrl + "novel/3382", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func TestFiles(t *testing.T) {
 }
 
 func TestFile(t *testing.T) {
-	body, code, err := util.HttpDo("GET", baseUrl + "novel/3382/chapter.json", nil, headers)
+	body, code, err := http.Do("GET", baseUrl + "novel/3382/chapter.json", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestFile(t *testing.T) {
 }
 
 func TestDeleteFile(t *testing.T) {
-	body, code, err := util.HttpDo("DELETE", baseUrl + "novel/3382/chapter.json", nil, headers)
+	body, code, err := http.Do("DELETE", baseUrl + "novel/3382/chapter.json", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestDeleteFile(t *testing.T) {
 }
 
 func TestDeleteDir(t *testing.T) {
-	body, code, err := util.HttpDo("DELETE", baseUrl + "novel/3382", nil, headers)
+	body, code, err := http.Do("DELETE", baseUrl + "novel/3382", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestDeleteDir(t *testing.T) {
 }
 
 func TestDeleteDB(t *testing.T) {
-	body, code, err := util.HttpDo("DELETE", baseUrl + "novel", nil, headers)
+	body, code, err := http.Do("DELETE", baseUrl + "novel", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestDeleteDB(t *testing.T) {
 }
 
 func TestUpdateFile(t *testing.T) {
-	body, code, err := util.HttpDo("POST", baseUrl + "novel/3382/chapter.json", testJson, headers)
+	body, code, err := http.Do("POST", baseUrl + "novel/3382/chapter.json", testJson, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -96,7 +96,7 @@ func TestSearchDir(t *testing.T) {
 		"path": "list.0.list.0.id",
 		"regex": "51",
 	}
-	body, code, err := util.HttpDo("POST", baseUrl + "novel/3382", reqBody, headers)
+	body, code, err := http.Do("POST", baseUrl + "novel/3382", reqBody, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestSearchDB(t *testing.T) {
 		"path": "list.0.list.0.id",
 		"regex": "51",
 	}
-	body, code, err := util.HttpDo("POST", baseUrl + "novel", reqBody, headers)
+	body, code, err := http.Do("POST", baseUrl + "novel", reqBody, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
 	}

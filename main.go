@@ -7,7 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/lollipopkit/gommon/term"
+	"github.com/lollipopkit/gommon/log"
 	"github.com/lollipopkit/nano-db/api"
 	. "github.com/lollipopkit/nano-db/cfg"
 )
@@ -15,7 +15,7 @@ import (
 func main() {
 	parseCli()
 	if err := startWeb(); err != nil {
-		term.Err(err.Error())
+		log.Err(err.Error())
 	}
 }
 
@@ -27,7 +27,7 @@ func parseCli() {
 	// generate cookie & update acl rules
 	if *userName != "" {
 		if *dbName == "" {
-			term.Info(api.GenCookie(*userName))
+			log.Info(api.GenCookie(*userName))
 		} else {
 			UpdateAcl(userName, dbName)
 		}

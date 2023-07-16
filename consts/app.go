@@ -1,6 +1,8 @@
 package consts
 
-import "github.com/lollipopkit/gommon/term"
+import (
+	"github.com/lollipopkit/gommon/log"
+)
 
 const (
 	FilePermission = 0770
@@ -20,5 +22,8 @@ const (
 )
 
 func init() {
-	term.SetLog(LogDir, FilePermission, true)
+	log.Setup(log.Config{
+		FilePerm: FilePermission,
+		LogDir: LogDir,
+	})
 }

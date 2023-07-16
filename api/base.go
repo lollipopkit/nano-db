@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/lollipopkit/gommon/term"
+	"github.com/lollipopkit/gommon/log"
 	"github.com/lollipopkit/nano-db/cfg"
 	"github.com/lollipopkit/nano-db/consts"
 )
@@ -23,7 +23,7 @@ func Status(c echo.Context) error {
 	loggedIn, userName := accountVerify(c)
 	if !loggedIn {
 		if userName != "" {
-			term.Warn("[api.Status] user %s is trying to get status", userName)
+			log.Warn("[api.Status] user %s is trying to get status", userName)
 		}
 		return permissionDenied(c)
 	}
@@ -39,7 +39,7 @@ func Status(c echo.Context) error {
 	for _, d := range dirs {
 		dbName := d.Name()
 		if !d.IsDir() {
-			term.Warn("[api.Status] %s is not a dir", dbName)
+			log.Warn("[api.Status] %s is not a dir", dbName)
 			continue
 		}
 		if cfg.Acl.Can(dbName, userName) {
