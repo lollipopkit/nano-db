@@ -35,7 +35,39 @@ func TestStatus(t *testing.T) {
 	t.Logf("status: %s", string(body))
 }
 
-func TestDir(t *testing.T) {
+func TestUpdateFile(t *testing.T) {
+	body, code, err := http.Do("POST", baseUrl + "novel/3382/chapter.json", testJson, headers)
+	if err != nil || code != 200 {
+		t.Fatal(err)
+	}
+	t.Logf("update file: %s", string(body))
+}
+
+func TestSearchDir(t *testing.T) {
+	reqBody := map[string]string{
+		"path": "list.0.list.0.id",
+		"regex": "51",
+	}
+	body, code, err := http.Do("POST", baseUrl + "novel/3382", reqBody, headers)
+	if err != nil || code != 200 {
+		t.Fatal(err)
+	}
+	t.Logf("search dir: %s", string(body))
+}
+
+func TestSearchDB(t *testing.T) {
+	reqBody := map[string]string{
+		"path": "list.0.list.0.id",
+		"regex": "51",
+	}
+	body, code, err := http.Do("POST", baseUrl + "novel", reqBody, headers)
+	if err != nil || code != 200 {
+		t.Fatal(err)
+	}
+	t.Logf("search db: %s", string(body))
+}
+
+func TestGetDirnames(t *testing.T) {
 	body, code, err := http.Do("GET", baseUrl + "novel", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
@@ -43,7 +75,7 @@ func TestDir(t *testing.T) {
 	t.Logf("dir: %s", string(body))
 }
 
-func TestFiles(t *testing.T) {
+func TestGetFilenames(t *testing.T) {
 	body, code, err := http.Do("GET", baseUrl + "novel/3382", nil, headers)
 	if err != nil || code != 200 {
 		t.Fatal(err)
@@ -81,36 +113,4 @@ func TestDeleteDB(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("delete db: %s", string(body))
-}
-
-func TestUpdateFile(t *testing.T) {
-	body, code, err := http.Do("POST", baseUrl + "novel/3382/chapter.json", testJson, headers)
-	if err != nil || code != 200 {
-		t.Fatal(err)
-	}
-	t.Logf("update file: %s", string(body))
-}
-
-func TestSearchDir(t *testing.T) {
-	reqBody := map[string]string{
-		"path": "list.0.list.0.id",
-		"regex": "51",
-	}
-	body, code, err := http.Do("POST", baseUrl + "novel/3382", reqBody, headers)
-	if err != nil || code != 200 {
-		t.Fatal(err)
-	}
-	t.Logf("search dir: %s", string(body))
-}
-
-func TestSearchDB(t *testing.T) {
-	reqBody := map[string]string{
-		"path": "list.0.list.0.id",
-		"regex": "51",
-	}
-	body, code, err := http.Do("POST", baseUrl + "novel", reqBody, headers)
-	if err != nil || code != 200 {
-		t.Fatal(err)
-	}
-	t.Logf("search db: %s", string(body))
 }

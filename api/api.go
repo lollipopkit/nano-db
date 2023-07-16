@@ -20,7 +20,7 @@ import (
 
 var (
 	_duration    = time.Hour
-	dbDataCacher *glc.PartedCacher
+	dbDataCacher *glc.PartedCacher[any]
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 )
 
 func init() {
-	dbDataCacher = glc.NewPartedElapsedCacher(
+	dbDataCacher = glc.NewPartedElapsedCacher[any](
 		Cfg.Cache.MaxSize*100,
 		Cfg.Cache.ActiveRate,
 		_duration,
@@ -70,7 +70,7 @@ func Read(c echo.Context) error {
 		return resp(c, 521, "db.Read(): "+err.Error())
 	}
 
-	dbDataCacher.Set(p, content)
+	dbDataCacher.Set(p, &content)
 
 	return resp(c, 200, content)
 }
@@ -112,7 +112,7 @@ func Write(c echo.Context) error {
 		return resp(c, 523, "db.Write(): "+err.Error())
 	}
 
-	dbDataCacher.Set(p, content)
+	dbDataCacher.Set(p, &content)
 
 	return ok(c)
 }
@@ -218,15 +218,10 @@ func DeleteDB(c echo.Context) error {
 		return resp(c, 528, "os.RemoveAll(): "+err.Error())
 	}
 
-	for _, path := range dbDataCacher.Values() {
-		p, ok := path.(string)
-		if !ok {
-			continue
-		}
-		if strings.HasPrefix(p, dbName+"/") {
-			dbDataCacher.Delete(path)
-		}
-	}
+	dbDataCacher.DeleteAllFn(func(key any, value *glc.CacheItem[any]) bool {
+		path, ok := key.(string); 
+		return ok && strings.HasPrefix(path, dbName+"/")
+	})
 
 	return ok(c)
 }
@@ -248,15 +243,10 @@ func DeleteDir(c echo.Context) error {
 		return resp(c, 529, "os.RemoveAll(): "+err.Error())
 	}
 
-	for _, path := range dbDataCacher.Values() {
-		p, ok := path.(string)
-		if !ok {
-			continue
-		}
-		if strings.HasPrefix(p, dbName+"/"+dir+"/") {
-			dbDataCacher.Delete(path)
-		}
-	}
+	dbDataCacher.DeleteAllFn(func(key any, value *glc.CacheItem[any]) bool {
+		path, ok := key.(string)
+		return ok && strings.HasPrefix(path, dbName+"/"+dir+"/")
+	})
 
 	return ok(c)
 }

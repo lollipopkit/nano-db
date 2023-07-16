@@ -42,9 +42,9 @@ func startWeb() error {
 		if Cfg.Log.Format == "" {
 			e.Use(middleware.Logger())
 		} else {
-			skipRegList := make([]regexp.Regexp, 0, len(Cfg.Log.SkipRegExp))
+			skipRegList := make([]*regexp.Regexp, 0, len(Cfg.Log.SkipRegExp))
 			for _, reg := range Cfg.Log.SkipRegExp {
-				skipRegList = append(skipRegList, *regexp.MustCompile(reg))
+				skipRegList = append(skipRegList, regexp.MustCompile(reg))
 			}
 
 			e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{

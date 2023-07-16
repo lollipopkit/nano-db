@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"os"
 	"sync"
 	"time"
@@ -14,16 +13,14 @@ import (
 
 var (
 	// map[string]*sync.RWMutex : {"PATH": LOCK}
-	pathLockCacher *glc.Cacher
-
-	ErrLockConvert = errors.New("lock convert failed")
+	pathLockCacher *glc.Cacher[sync.RWMutex]
 )
 
 func init() {
 	if err := os.MkdirAll(consts.DBDir, consts.FilePermission); err != nil {
 		panic(err)
 	}
-	pathLockCacher = glc.NewCacher(Cfg.Cache.MaxSize)
+	pathLockCacher = glc.NewCacher[sync.RWMutex](Cfg.Cache.MaxSize)
 }
 
 func getLock(path string) (*sync.RWMutex, error) {
@@ -40,11 +37,7 @@ func getLock(path string) (*sync.RWMutex, error) {
 		return lock, nil
 	}
 
-	a, ok := l.(*sync.RWMutex)
-	if ok {
-		return a, nil
-	}
-	return nil, ErrLockConvert
+	return l, nil
 }
 
 func Read(path string, model any) error {
