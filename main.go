@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"math/rand"
 	"os"
 	"regexp"
 
@@ -20,17 +21,17 @@ func main() {
 }
 
 func parseCli() {
-	userName := flag.String("u", "", "generate the cookie with -u <username>")
+	token := flag.String("t", "", "set token with -u <token>")
 	dbName := flag.String("d", "", "update acl rules with -d <dbname>")
 	flag.Parse()
 
 	// generate cookie & update acl rules
-	if *userName != "" {
-		if *dbName == "" {
-			log.Info(api.GenCookie(*userName))
-		} else {
-			UpdateAcl(userName, dbName)
+	if *dbName != "" {
+		if *token == "" {
+			*token = genToken()
+			log.Info("generated token: %s", *token)
 		}
+		UpdateAcl(*token, *dbName)
 		os.Exit(0)
 	}
 }
@@ -38,18 +39,18 @@ func parseCli() {
 func startWeb() error {
 	e := echo.New()
 
-	if Cfg.Log.Enable {
-		if Cfg.Log.Format == "" {
+	if App.Log.Enable {
+		if App.Log.Format == "" {
 			e.Use(middleware.Logger())
 		} else {
-			skipRegList := make([]*regexp.Regexp, 0, len(Cfg.Log.SkipRegExp))
-			for _, reg := range Cfg.Log.SkipRegExp {
+			skipRegList := make([]*regexp.Regexp, 0, len(App.Log.SkipRegExp))
+			for _, reg := range App.Log.SkipRegExp {
 				skipRegList = append(skipRegList, regexp.MustCompile(reg))
 			}
 
 			e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-				Format:  Cfg.Log.Format,
-				Skipper: func (context echo.Context) bool {
+				Format: App.Log.Format,
+				Skipper: func(context echo.Context) bool {
 					url := context.Request().URL.Path
 					for _, reg := range skipRegList {
 						if reg.MatchString(url) {
@@ -61,30 +62,38 @@ func startWeb() error {
 			}))
 		}
 	}
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(Cfg.Security.RateLimit)))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(App.Security.RateLimit)))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: Cfg.Security.CORSList,
+		AllowOrigins: App.Security.CORSList,
 	}))
-	e.Use(middleware.BodyLimit(Cfg.Security.BodyLimit))
+	e.Use(middleware.BodyLimit(App.Security.BodyLimit))
 
 	// Routes
 	e.HEAD("/", api.Alive)
-	e.GET("/", api.Status)
 
-	e.GET("/:db", api.Dirs)
+	e.GET("/:db", api.ReadDB)
 	e.DELETE("/:db", api.DeleteDB)
-	e.POST("/:db", api.SearchDB)
 
-	e.GET("/:db/:dir", api.Files)
+	e.GET("/:db/:dir", api.ReadDir)
 	e.DELETE("/:db/:dir", api.DeleteDir)
-	e.POST("/:db/:dir", api.SearchDir)
 
 	e.GET("/:db/:dir/:file", api.Read)
 	e.POST("/:db/:dir/:file", api.Write)
 	e.DELETE("/:db/:dir/:file", api.Delete)
 
+	e.RouteNotFound("/*", api.NotFound)
+
 	// Start server
 	e.HideBanner = true
-	return e.Start(Cfg.Addr)
+	return e.Start(App.Addr)
+}
+
+func genToken() string {
+	runes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	salt := make([]rune, App.Security.TokenLen)
+	for i := 0; i < App.Security.TokenLen; i++ {
+		salt[i] = runes[rand.Intn(len(runes))]
+	}
+	return string(salt)
 }

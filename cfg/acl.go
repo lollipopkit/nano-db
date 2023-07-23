@@ -5,10 +5,10 @@ import (
 	"sync"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/lollipopkit/gommon/log"
 	"github.com/lollipopkit/gommon/sys"
-	"github.com/lollipopkit/nano-db/consts"
-	. "github.com/lollipopkit/nano-db/json"
+	"github.com/lollipopkit/nano-db/cst"
 )
 
 var (
@@ -17,12 +17,14 @@ var (
 		Rules:   []ACLRule{},
 	}
 	aclLock = &sync.RWMutex{}
+
+	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
 func init() {
 	go func() {
 		for {
-			err := Acl.Load()
+			err := Acl.load()
 			if err != nil {
 				panic(err)
 			}
@@ -37,23 +39,23 @@ type ACL struct {
 }
 
 type ACLRule struct {
-	UserName string   `json:"user"`
-	DBNames  []string `json:"db"`
+	Token   string   `json:"token"`
+	DBNames []string `json:"dbs"`
 }
 
 func (acl *ACL) Save() error {
-	data, err := Json.Marshal(acl)
+	data, err := json.MarshalIndent(acl, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(consts.AclCfgFile, data, consts.FilePermission)
+	return os.WriteFile(cst.AclCfgFile, data, cst.FilePermission)
 }
 
-func (acl *ACL) Load() error {
+func (acl *ACL) load() error {
 	aclLock.Lock()
 	defer aclLock.Unlock()
-	if !sys.Exist(consts.AclCfgFile) {
-		err := os.MkdirAll(consts.CfgDir, consts.FilePermission)
+	if !sys.Exist(cst.AclCfgFile) {
+		err := os.MkdirAll(cst.CfgDir, cst.FilePermission)
 		if err != nil {
 			return err
 		}
@@ -61,19 +63,19 @@ func (acl *ACL) Load() error {
 		return acl.Save()
 	}
 
-	data, err := os.ReadFile(consts.AclCfgFile)
+	data, err := os.ReadFile(cst.AclCfgFile)
 	if err != nil {
 		return err
 	}
 
-	return Json.Unmarshal(data, acl)
+	return json.Unmarshal(data, acl)
 }
 
-func (acl *ACL) UpdateRule(dbName, userName string) error {
+func (acl *ACL) updateRule(dbName, token string) error {
 	aclLock.Lock()
 	defer aclLock.Unlock()
 	for i, rule := range acl.Rules {
-		if rule.UserName == userName {
+		if rule.Token == token {
 			for _, db := range rule.DBNames {
 				if db == dbName {
 					return nil
@@ -84,17 +86,17 @@ func (acl *ACL) UpdateRule(dbName, userName string) error {
 		}
 	}
 	acl.Rules = append(acl.Rules, ACLRule{
-		DBNames:  []string{dbName},
-		UserName: userName,
+		DBNames: []string{dbName},
+		Token:   token,
 	})
 	return acl.Save()
 }
 
-func (acl *ACL) Can(dbName, userName string) bool {
+func (acl *ACL) Can(dbName, token string) bool {
 	aclLock.RLock()
 	defer aclLock.RUnlock()
 	for _, rule := range acl.Rules {
-		if rule.UserName == userName {
+		if rule.Token == token {
 			for _, db := range rule.DBNames {
 				if db == dbName {
 					return true
@@ -106,8 +108,8 @@ func (acl *ACL) Can(dbName, userName string) bool {
 	return false
 }
 
-func UpdateAcl(userName, dbName *string) {
-	err := Acl.UpdateRule(*dbName, *userName)
+func UpdateAcl(token, dbName string) {
+	err := Acl.updateRule(dbName, token)
 	if err != nil {
 		log.Err("acl update rule: " + err.Error())
 	} else {
