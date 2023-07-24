@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -23,11 +24,11 @@ func Read(c echo.Context) error {
 	dir := c.Param("dir")
 	file := c.Param("file")
 
-	p, err := path(dbName, dir, file)
+	p, err := checkAndJoinPath(dbName, dir, file)
 	if err != nil {
 		// 这里的错误可能是因为某些无权限的攻击引起的，所以不 log 记录
 		// 同理，api.checkPermission 之前的错误都不 log 记录
-		return c.String(cst.ECPath, err.Error())
+		return c.String(cePath, err.Error())
 	}
 
 	if !checkPermission(c, "api.Read", dbName) {
@@ -42,9 +43,9 @@ func Write(c echo.Context) error {
 	dir := c.Param("dir")
 	file := c.Param("file")
 
-	p, err := path(dbName, dir, file)
+	p, err := checkAndJoinPath(dbName, dir, file)
 	if err != nil {
-		return c.String(cst.ECPath, err.Error())
+		return c.String(cePath, err.Error())
 	}
 
 	if !checkPermission(c, "api.Write", dbName) {
@@ -53,20 +54,23 @@ func Write(c echo.Context) error {
 
 	err = os.MkdirAll(filepath.Dir(p), cst.FilePermission)
 	if err != nil {
-		log.Err("[api.Write] os.MkdirAll(): %s", err.Error())
-		return c.String(cst.ECIO, "os.MkdirAll(): "+err.Error())
+		errStr := fmt.Sprintf("[api.Write] os.MkdirAll(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	data, err := io.ReadAll(c.Request().Body)
 	if err != nil {
-		log.Err("[api.Write] io.ReadAll(): %s", err.Error())
-		return c.String(cst.ECIO, "io.ReadAll(): "+err.Error())
+		errStr := fmt.Sprintf("[api.Write] io.ReadAll(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	err = os.WriteFile(p, data, cst.FilePermission)
 	if err != nil {
-		log.Err("[api.Write] os.WriteFile(): %s", err.Error())
-		return c.String(cst.ECIO, "os.WriteFile(): "+err.Error())
+		errStr := fmt.Sprintf("[api.Write] os.WriteFile(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	return c.NoContent(200)
@@ -77,9 +81,9 @@ func Delete(c echo.Context) error {
 	dir := c.Param("dir")
 	file := c.Param("file")
 
-	p, err := path(dbName, dir, file)
+	p, err := checkAndJoinPath(dbName, dir, file)
 	if err != nil {
-		return c.String(cst.ECIO, err.Error())
+		return c.String(ceIO, err.Error())
 	}
 
 	if !checkPermission(c, "api.Delete", dbName) {
@@ -88,8 +92,9 @@ func Delete(c echo.Context) error {
 
 	err = os.Remove(p)
 	if err != nil {
-		log.Err("[api.Delete] os.Remove(): %s", err.Error())
-		return c.String(cst.ECIO, "os.Remove(): "+err.Error())
+		errStr := fmt.Sprintf("[api.Delete] os.Remove(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	return c.NoContent(200)
@@ -99,9 +104,9 @@ func ReadDir(c echo.Context) error {
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 
-	p, err := path(dbName, dir)
+	p, err := checkAndJoinPath(dbName, dir)
 	if err != nil {
-		return c.String(cst.ECPath, err.Error())
+		return c.String(cePath, err.Error())
 	}
 
 	if !checkPermission(c, "api.ReadDir", dbName) {
@@ -110,8 +115,9 @@ func ReadDir(c echo.Context) error {
 
 	files, err := os.ReadDir(p)
 	if err != nil {
-		log.Err("[api.ReadDir] os.ReadDir(): %s", err.Error())
-		return c.String(cst.ECIO, "os.ReadDir(): "+err.Error())
+		errStr := fmt.Sprintf("[api.ReadDir] os.ReadDir(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	var filesList []string
@@ -127,9 +133,9 @@ func ReadDir(c echo.Context) error {
 func ReadDB(c echo.Context) error {
 	dbName := c.Param("db")
 
-	p, err := path(dbName)
+	p, err := checkAndJoinPath(dbName)
 	if err != nil {
-		return c.String(cst.ECPath, err.Error())
+		return c.String(cePath, err.Error())
 	}
 
 	if !checkPermission(c, "api.ReadDB", dbName) {
@@ -138,8 +144,9 @@ func ReadDB(c echo.Context) error {
 
 	dirs, err := os.ReadDir(p)
 	if err != nil {
-		log.Err("[api.ReadDB] os.ReadDir(): %s", err.Error())
-		return c.String(cst.ECIO, "os.ReadDir(): "+err.Error())
+		errStr := fmt.Sprintf("[api.ReadDB] os.ReadDir(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	var dirsList []string
@@ -155,9 +162,9 @@ func ReadDB(c echo.Context) error {
 func DeleteDB(c echo.Context) error {
 	dbName := c.Param("db")
 
-	p, err := path(dbName)
+	p, err := checkAndJoinPath(dbName)
 	if err != nil {
-		return c.String(cst.ECPath, err.Error())
+		return c.String(cePath, err.Error())
 	}
 
 	if !checkPermission(c, "api.DeleteDB", dbName) {
@@ -166,8 +173,9 @@ func DeleteDB(c echo.Context) error {
 
 	err = os.RemoveAll(p)
 	if err != nil {
-		log.Err("[api.DeleteDB] os.RemoveAll(): %s", err.Error())
-		return c.String(cst.ECIO, "os.RemoveAll(): "+err.Error())
+		errStr := fmt.Sprintf("[api.DeleteDB] os.RemoveAll(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	return c.NoContent(200)
@@ -177,9 +185,9 @@ func DeleteDir(c echo.Context) error {
 	dbName := c.Param("db")
 	dir := c.Param("dir")
 
-	p, err := path(dbName, dir)
+	p, err := checkAndJoinPath(dbName, dir)
 	if err != nil {
-		return c.String(cst.ECPath, err.Error())
+		return c.String(cePath, err.Error())
 	}
 
 	if !checkPermission(c, "api.DeleteDir", dbName) {
@@ -188,8 +196,9 @@ func DeleteDir(c echo.Context) error {
 
 	err = os.RemoveAll(p)
 	if err != nil {
-		log.Err("[api.DeleteDir] os.RemoveAll(): %s", err.Error())
-		return c.String(cst.ECIO, "os.RemoveAll(): "+err.Error())
+		errStr := fmt.Sprintf("[api.DeleteDir] os.RemoveAll(): %s", err.Error())
+		log.Err(errStr)
+		return c.String(ceIO, errStr)
 	}
 
 	return c.NoContent(200)

@@ -4,12 +4,10 @@
 白话文：将数据按文件储存，再提供http接口来访问。  
 
 ## 🔖 特点
-- 无需SQL语句：使用gjson与正则搜索匹配数据
 - 轻量：即使包含数十万索引，树莓派上也能流畅运行
 - 高速：微秒级查询
 - RESTful接口：HTTP协议，方便使用
-- 缓存：查询结果缓存，提高查询效率
-- 权限管理：ACL，每个用户权限分离
+- 权限管理：ACL
 - SDK：目前支持 [go](https://github.com/lollipopkit/nano-db-sdk-go)
 
 ## 📖 使用
@@ -25,7 +23,7 @@
 示例：
 ```
 ➜  nano-db git:(main) ✗ nano-db -d novel
-[INF] generated token: ijlV5aKzMja0MgTkpd0Q8J6zuegtwzVQzEd8A
+[INF] generated token: FHYmGdNwfiJngvF2z
 [SUC] acl update rule: success
 ```
 可以用生成的 `token` 访问名为 `novel` 的数据库
@@ -41,7 +39,7 @@
 
 示例：
 ```
-➜  nano-db git:(main) ✗ nano-db -d novel -t ijlV5aKzMja0MgTkpd0Q8J6zuegtwzVQzEd8A
+➜  nano-db git:(main) ✗ nano-db -d novel -t FHYmGdNwfiJngvF2z
 [SUC] acl update rule: success
 ```
 然后就可以用该 `token` 访问名叫 `novel` 的数据库了
@@ -80,7 +78,6 @@
 
 ⚠️**注意**：
 如果当前数据库正在运行，acl更改将在一分钟内应用。
-
 
 ### 🔨 数据库操作
 接下来是http接口的使用，sdk文档请前往sdk查看。

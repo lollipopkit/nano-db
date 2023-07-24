@@ -15,7 +15,7 @@ var (
 	errPathDot     = errors.New("path cannot start or end with '.'")
 )
 
-func path(paths ...string) (string, error) {
+func checkAndJoinPath(paths ...string) (string, error) {
 	for _, p := range paths {
 		if err := verifyPath(p); err != nil {
 			return "", fmt.Errorf("%s is invalid: %s", paths, err.Error())
@@ -37,10 +37,10 @@ func verifyPath(s string) error {
 		return errPathDot
 	}
 	for _, r := range runes {
-		if (r >= 48 && r <= 57) || 
-		(r >= 65 && r <= 90) || 
-		(r >= 97 && r <= 122) ||
-		r == 46 {
+		if (r >= 48 && r <= 57) ||
+			(r >= 65 && r <= 90) ||
+			(r >= 97 && r <= 122) ||
+			r == 46 {
 			continue
 		}
 		return fmt.Errorf("invalid character '%s'", string(r))
