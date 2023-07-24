@@ -15,7 +15,7 @@ var (
 	//go:embed test.json
 	testJson []byte
 	headers  = map[string]string{
-		"NanoDB":       "FHYmGdNwfiJngvF2z",
+		"NanoDB": "FHYmGdNwfiJngvF2z",
 	}
 )
 
@@ -31,6 +31,7 @@ func TestIllegalPath(t *testing.T) {
 	_illegalPath(t, "..")
 	_illegalPath(t, "/")
 	_illegalPath(t, "-")
+	_illegalPath(t, "../")
 }
 func _illegalPath(t *testing.T, path string) {
 	body, code, err := http.Do("GET", baseUrl+path, nil, headers)

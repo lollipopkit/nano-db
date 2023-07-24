@@ -82,7 +82,7 @@ func startWeb() error {
 	e.POST("/:db/:dir/:file", api.Write)
 	e.DELETE("/:db/:dir/:file", api.Delete)
 
-	e.RouteNotFound("/*", api.NotFound)
+	e.HTTPErrorHandler = api.HandleErr
 
 	// Start server
 	e.HideBanner = true
