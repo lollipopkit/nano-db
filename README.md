@@ -48,13 +48,11 @@
 如果不愿意将 `token` 暴露至 shell，可以打开 `.cfg/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
 ```json
 {
-      "ver":1,
+      "ver": 1,
       "rules":[
             {
-                  "token":"token1",
-                  "dbs":[
-                        "novel"
-                  ]
+                  "token": "token1",
+                  "dbs":["novel"]
             }
       ]
 }
@@ -63,14 +61,11 @@
 如果想给 `token1` 添加 `test` 数据库的权限，可以如下修改：
 ```json
 {
-      "ver":1,
+      "ver": 1,
       "rules":[
             {
                   "token": "token1",
-                  "dbs":[
-                        "novel",
-                        "test"
-                  ]
+                  "dbs":["novel", "test"]
             }
       ]
 }
@@ -80,20 +75,20 @@
 如果当前数据库正在运行，acl更改将在一分钟内应用。
 
 ### 🔨 数据库操作
-接下来是http接口的使用，sdk文档请前往sdk查看。
+接下来是 http 接口的使用。
 
 方法|接口|功能|额外说明
 ---|---|---|---
-HEAD|`/`|查看数据库是否存活|唯一不需要附带cookie的接口，可用于客户端检查数据库是否存活
-GET|`/{DB}`|获取DB内所有DIR|会返回所有DIR的名称，并非DB内所有DIR的数据
+HEAD|`/`|查看数据库是否存活|唯一不需要 token 的接口，可用于客户端检查数据库是否存活
+GET|`/{DB}`|获取 DB 内所有 DIR|会返回所有 DIR 的**名称**
 DELETE|`/{DB}`|删除数据库|不会删除对该数据库的权限
-GET|`/{DB}/{DIR}`|获取DIR内所有FILE|获取DIR下所有文件的名称，并非DIR下所有数据
-DELETE|`/{DB}/{DIR}`|删除某DIR|并且删除DIR下所有FILE
-GET|`/{DB}/{DIR}/{FILE}`|获取|不存在则会返回错误
-POST|`/{DB}/{DIR}/{FILE}`|更新|需要在body附带需要写入的数据
+GET|`/{DB}/{DIR}`|获取 DIR 内所有 FILE|获取 DIR 下所有文件的**名称**
+DELETE|`/{DB}/{DIR}`|删除某 DIR|并删除 DIR 下所有 FILE
+GET|`/{DB}/{DIR}/{FILE}`|获取 FILE|不存在则会返回错误
+POST|`/{DB}/{DIR}/{FILE}`|更新 FILE|需要在 body 附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
 
-⚠️**注意**：`{DB}`,`{DIR}`,`{FILE}` 不能包含除 `.`(不能在开头结尾) `0-9` `A-Z` `a-z` 以外的字符，并且他们的长度都不能超过37。
+⚠️**注意**：`{DB}`,`{DIR}`,`{FILE}` 不能包含除 `.`(不能在开头结尾) `0-9` `A-Z` `a-z` 以外的字符，并且他们的长度都不能超过37（可在配置中自定义）。
 
 建议规范：`novel/chapter/1.json` `xapp/user/xxx.json` `secret/key/xxx.json`
 

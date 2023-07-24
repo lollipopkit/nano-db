@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/labstack/echo/v4"
 	"github.com/lollipopkit/nano-db/cfg"
 	"github.com/lollipopkit/nano-db/cst"
 )
@@ -15,7 +16,16 @@ var (
 	errPathDot     = errors.New("path cannot start or end with '.'")
 )
 
-func checkAndJoinPath(paths ...string) (string, error) {
+func checkPermission(c echo.Context) bool {
+	sn := c.Request().Header.Get(cst.HeaderKey)
+	if len(sn) != cfg.App.Security.TokenLen {
+		return false
+	}
+
+	return cfg.Acl.Can(c.Param("db"), sn)
+}
+
+func checkAndJoinPath(paths... string) (string, error) {
 	for _, p := range paths {
 		if err := verifyPath(p); err != nil {
 			return "", fmt.Errorf("%s is invalid: %s", paths, err.Error())

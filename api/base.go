@@ -2,7 +2,18 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/lollipopkit/gommon/log"
+	"github.com/lollipopkit/nano-db/cfg"
+)
+
+var (
+	rateLimiterStore = middleware.NewRateLimiterMemoryStore(cfg.App.Security.RateLimit)
+)
+
+const (
+	contextKeyPath     = "path"
+	contextKeyPassPerm = "pass_perm"
 )
 
 func permissionDenied(c echo.Context) error {
@@ -37,5 +48,58 @@ func HandleErr(err error, c echo.Context) {
 	err = c.NoContent(he.Code)
 	if err != nil {
 		log.Err(err.Error())
+	}
+}
+
+func CheckPathAndPerm(depth uint8) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// 检查路径
+			var paths []string
+			switch depth {
+			case 1:
+				paths = []string{c.Param("db")}
+			case 2:
+				paths = []string{c.Param("db"), c.Param("dir")}
+			case 3:
+				paths = []string{c.Param("db"), c.Param("dir"), c.Param("file")}
+			default:
+				return c.String(cePath, "invalid depth")
+			}
+			p, err := checkAndJoinPath(paths...)
+			if err != nil {
+				return c.String(cePath, err.Error())
+			}
+			c.Set(contextKeyPath, p)
+	
+			// 检查权限
+			passPermCheck, ok := c.Get(contextKeyPassPerm).(bool)
+			if !ok || !passPermCheck {
+				if !checkPermission(c) {
+					return permissionDenied(c)
+				}
+			}
+	
+			return next(c)
+		}
+	}
+}
+
+var RateLimiter echo.MiddlewareFunc = func(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		identifier := c.RealIP()
+		if allow, err := rateLimiterStore.Allow(identifier); !allow {
+			if checkPermission(c) {
+				c.Set(contextKeyPassPerm, true)
+				return next(c)
+			}
+			c.Error(&echo.HTTPError{
+				Code:     middleware.ErrRateLimitExceeded.Code,
+				Message:  middleware.ErrRateLimitExceeded.Message,
+				Internal: err,
+			})
+			return nil
+		}
+		return next(c)
 	}
 }

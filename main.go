@@ -62,7 +62,7 @@ func startWeb() error {
 			}))
 		}
 	}
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(App.Security.RateLimit)))
+	e.Use(api.RateLimiter)
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: App.Security.CORSList,
@@ -72,15 +72,15 @@ func startWeb() error {
 	// Routes
 	e.HEAD("/", api.Alive)
 
-	e.GET("/:db", api.ReadDB)
-	e.DELETE("/:db", api.DeleteDB)
+	e.GET("/:db", api.ReadDB, api.CheckPathAndPerm(1))
+	e.DELETE("/:db", api.DeleteDB, api.CheckPathAndPerm(1))
 
-	e.GET("/:db/:dir", api.ReadDir)
-	e.DELETE("/:db/:dir", api.DeleteDir)
+	e.GET("/:db/:dir", api.ReadDir, api.CheckPathAndPerm(2))
+	e.DELETE("/:db/:dir", api.DeleteDir, api.CheckPathAndPerm(2))
 
-	e.GET("/:db/:dir/:file", api.Read)
-	e.POST("/:db/:dir/:file", api.Write)
-	e.DELETE("/:db/:dir/:file", api.Delete)
+	e.GET("/:db/:dir/:file", api.Read, api.CheckPathAndPerm(3))
+	e.POST("/:db/:dir/:file", api.Write, api.CheckPathAndPerm(3))
+	e.DELETE("/:db/:dir/:file", api.Delete, api.CheckPathAndPerm(3))
 
 	e.HTTPErrorHandler = api.HandleErr
 
