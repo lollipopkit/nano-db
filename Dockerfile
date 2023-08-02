@@ -7,5 +7,5 @@ RUN arch="$(apk --print-arch)"; case "$arch" in 'x86_64') arch="amd64"; ;; 'armh
     && rm "ndb_${APPVER}_linux_$arch.tar.gz" \
     && mv ndb /usr/bin \
     && chmod +x /usr/bin/ndb
-
+WORKDIR /app
 ENTRYPOINT ["/usr/bin/ndb", "serve"]

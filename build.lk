@@ -8,8 +8,9 @@ if #args != 3 {
 }
 
 version := args.2
-if !version:match(version_reg).0 {
-    errorf('invalid version format: %s', version)
+_, err := version:match(version_reg)
+if err {
+    errorf('invalid version format: %s, %s', version, err)
 }
 
 cmd_parts := {
@@ -21,11 +22,12 @@ cmd_parts := {
     '.',
     '--push',
 }
-cmd := fmt(' ':join(cmd_parts), version, version)
+cmd := ' '
+cmd = fmt(cmd:join(cmd_parts), version, version)
 
 result, err := os.exec(cmd)
 if err != nil {
     errorf('%s:\n%s', err, result)
 }
-printf('%sSuccess%s', term.green, term.nocolor)
+printf('%sSuccess%s\n', term.green, term.nocolor)
 

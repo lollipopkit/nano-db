@@ -14,10 +14,6 @@ var (
 
 	App = &AppConfig{
 		Addr: ":3770",
-		Cache: CacheConfig{
-			MaxSize:    100,
-			ActiveRate: 0.77,
-		},
 		Log: LogConfig{
 			Enable: false,
 			Format: "${time_rfc3339} ${method} ${status} ${uri} \nLatency: ${latency_human}  ${error}\n",
@@ -43,9 +39,6 @@ func init() {
 	if err != nil {
 		panic("AppConfig.Load(): " + err.Error())
 	}
-	if App.Cache.ActiveRate < 0 || App.Cache.ActiveRate > 1 {
-		panic("invalid cache rate")
-	}
 	if App.Misc.MaxPathLen <= 0 {
 		panic("invalid max path len")
 	}
@@ -61,7 +54,6 @@ func init() {
 
 type AppConfig struct {
 	Addr     string         `json:"addr"`
-	Cache    CacheConfig    `json:"cache"`
 	Log      LogConfig      `json:"log"`
 	Security SecurityConfig `json:"security"`
 	Misc     MiscConfig     `json:"misc"`
@@ -72,17 +64,6 @@ type MiscConfig struct {
 	//
 	//	{{DB}} {{DIR}} {{FILE}}
 	MaxPathLen int `json:"max_path_len"`
-}
-
-type CacheConfig struct {
-	// adjust this value according to your memory size.
-	//
-	// bigger for better performance.
-	MaxSize int `json:"max_size"`
-	// 0.77 -> 77% of cache will be active
-	//
-	// Must 0 < ActiveRate <= 1
-	ActiveRate float64 `json:"active_rate"`
 }
 
 type SecurityConfig struct {

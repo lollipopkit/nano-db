@@ -8,4 +8,4 @@ services:
     environment:
       - TZ=Asia/Shanghai
     ports:
-      - 3773:3773
+      - 3773:3770
