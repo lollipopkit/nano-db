@@ -14,12 +14,14 @@
 
 ### 启动数据库
 `nano-db`
+
 可以编辑 `.cfg/app.json` 修改配置
 
 ### 添加权限
 
 #### 设置权限
-`nano-db -d {dbName}`  
+`nano-db -d {dbName}`
+
 示例：
 ```
 ➜  nano-db git:(main) ✗ nano-db -d novel
