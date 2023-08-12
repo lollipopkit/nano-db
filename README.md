@@ -90,7 +90,7 @@ GET|`/{DB}/{DIR}/{FILE}`|获取 FILE|不存在则会返回错误
 POST|`/{DB}/{DIR}/{FILE}`|更新 FILE|需要在 body 附带需要写入的数据
 DELETE|`/{DB}/{DIR}/{FILE}`|删除|如果路径不存在则会返回错误
 
-⚠️**注意**：`{DB}`,`{DIR}`,`{FILE}` 不能包含除 `.`(不能在开头结尾) `0-9` `A-Z` `a-z` 以外的字符，并且他们的长度都不能超过37（可在配置中自定义）。
+⚠️**注意**：`{DB}`,`{DIR}`,`{FILE}` 不能包含除 `.`(不能在开头结尾) `0-9` `A-Z` `a-z` `_` `-` 以外的字符，并且他们的长度都不能超过37（可在配置中自定义）。
 
 建议规范：`novel/chapter/1.json` `xapp/user/xxx.json` `secret/key/xxx.json`
 

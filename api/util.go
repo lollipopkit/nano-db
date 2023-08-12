@@ -34,7 +34,7 @@ func checkAndJoinPath(paths ...string) (string, error) {
 	return filepath.Join(cst.DBDir, filepath.Join(paths...)), nil
 }
 
-// 如果包含除 0-9 A-Z a-z . 以外的字符，返回错误
+// 如果包含除 0-9 A-Z a-z . - _ 以外的字符，返回错误
 func verifyPath(s string) error {
 	if len(s) == 0 {
 		return errEmptyPath
@@ -50,7 +50,9 @@ func verifyPath(s string) error {
 		if (r >= 48 && r <= 57) ||
 			(r >= 65 && r <= 90) ||
 			(r >= 97 && r <= 122) ||
-			r == 46 {
+			r == 46 || 
+			r == 45 ||
+			r == 95 {
 			continue
 		}
 		return fmt.Errorf("invalid character '%s'", string(r))
