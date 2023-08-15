@@ -25,7 +25,7 @@ func checkPermission(c echo.Context) bool {
 	return cfg.Acl.Can(c.Param("db"), sn)
 }
 
-func checkAndJoinPath(paths... string) (string, error) {
+func checkAndJoinPath(paths ...string) (string, error) {
 	for _, p := range paths {
 		if err := verifyPath(p); err != nil {
 			return "", fmt.Errorf("%s is invalid: %s", paths, err.Error())

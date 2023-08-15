@@ -15,7 +15,7 @@ var (
 	//go:embed test.json
 	testJson []byte
 	headers  = map[string]string{
-		"NanoDB": "FHYmGdNwfiJngvF2z",
+		"NanoDB": "NOGZneftibPWPk5xXA4QOhxVbPvrrNnY8aL26",
 	}
 )
 

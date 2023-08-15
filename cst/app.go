@@ -14,6 +14,8 @@ const (
 	AppCfgFile = CfgDir + "app.json"
 
 	HeaderKey = "NanoDB"
+
+	DefaultTokenLen = 37
 )
 
 func init() {

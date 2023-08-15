@@ -28,6 +28,7 @@ func init() {
 			if err != nil {
 				panic(err)
 			}
+			Acl.checkTokenLen()
 			time.Sleep(time.Minute)
 		}
 	}()
@@ -106,6 +107,20 @@ func (acl *ACL) Can(dbName, token string) bool {
 		}
 	}
 	return false
+}
+
+func (acl *ACL) checkTokenLen() bool {
+	for _, rule := range acl.Rules {
+		if len(rule.Token) != App.Security.TokenLen {
+			log.Warn(
+				"token len is not match: %d(AppConfig) / %d(AclConfig)",
+				App.Security.TokenLen,
+				len(rule.Token),
+			)
+			return false
+		}
+	}
+	return true
 }
 
 func UpdateAcl(token, dbName string) {

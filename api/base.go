@@ -71,7 +71,7 @@ func CheckPathAndPerm(depth uint8) echo.MiddlewareFunc {
 				return c.String(cePath, err.Error())
 			}
 			c.Set(contextKeyPath, p)
-	
+
 			// 检查权限
 			passPermCheck, ok := c.Get(contextKeyPassPerm).(bool)
 			if !ok || !passPermCheck {
@@ -79,7 +79,7 @@ func CheckPathAndPerm(depth uint8) echo.MiddlewareFunc {
 					return permissionDenied(c)
 				}
 			}
-	
+
 			return next(c)
 		}
 	}

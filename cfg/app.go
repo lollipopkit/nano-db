@@ -23,7 +23,7 @@ var (
 			},
 		},
 		Security: SecurityConfig{
-			TokenLen:  17,
+			TokenLen:  cst.DefaultTokenLen,
 			RateLimit: rate.Limit(20),
 			CORSList:  []string{},
 			BodyLimit: "1M",
@@ -43,7 +43,7 @@ func init() {
 		panic("invalid max path len")
 	}
 	if App.Security.TokenLen <= 0 {
-		App.Security.TokenLen = 17
+		App.Security.TokenLen = cst.DefaultTokenLen
 	}
 
 	err = App.Save()
@@ -67,7 +67,7 @@ type MiscConfig struct {
 }
 
 type SecurityConfig struct {
-	// Default: 17
+	// Default: 37
 	TokenLen int `json:"token_len"`
 	// 20 -> 20 req / sec
 	RateLimit rate.Limit `json:"rate_limit"`

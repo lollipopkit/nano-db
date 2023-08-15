@@ -36,18 +36,8 @@
 
 #### 添加权限
 
-##### 命令行添加
-`nano-db -d {dbName} -t {token}`   
-
-示例：
-```
-➜  nano-db git:(main) ✗ nano-db -d novel -t FHYmGdNwfiJngvF2z
-[SUC] acl update rule: success
-```
-然后就可以用该 `token` 访问名叫 `novel` 的数据库了
-
 ##### 手动添加
-如果不愿意将 `token` 暴露至 shell，可以打开 `.cfg/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
+建议手动添加，这样不会将 `token` 暴露至 shell，可以打开 `.cfg/acl.json`（如文件不存在，需要先启动数据库一次或手动创建）文件进行手动修改，例如：
 ```json
 {
       "ver": 1,
@@ -72,6 +62,16 @@
       ]
 }
 ```
+
+##### 命令行添加
+`nano-db -d {dbName} -t {token}`   
+
+示例：
+```
+➜  nano-db git:(main) ✗ nano-db -d novel -t FHYmGdNwfiJngvF2z
+[SUC] acl update rule: success
+```
+然后就可以用该 `token` 访问名叫 `novel` 的数据库了
 
 ⚠️**注意**：
 如果当前数据库正在运行，acl更改将在一分钟内应用。
