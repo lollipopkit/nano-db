@@ -45,6 +45,8 @@ func startWeb() error {
 	// Routes
 	e.HEAD("/", api.Alive)
 
+	e.GET("/", api.WS)
+
 	e.GET("/:db", api.ReadDB, api.CheckPathAndPerm(1))
 	e.DELETE("/:db", api.DeleteDB, api.CheckPathAndPerm(1))
 

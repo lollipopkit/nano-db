@@ -26,15 +26,19 @@ func checkPermission(c echo.Context) bool {
 }
 
 func checkAndJoinPath(paths ...string) (string, error) {
-	for _, p := range paths {
-		if err := verifyPath(p); err != nil {
+	for idx := range paths {
+		if err := verifyPath(paths[idx]); err != nil {
 			return "", fmt.Errorf("%s is invalid: %s", paths, err.Error())
 		}
 	}
 	return filepath.Join(cst.DBDir, filepath.Join(paths...)), nil
 }
 
-// 如果包含除 0-9 A-Z a-z . - _ 以外的字符，返回错误
+// - 包含除 0-9 A-Z a-z . - _ 以外的字符
+//
+// - 以 . 开头或结尾
+//
+// 将会返回错误
 func verifyPath(s string) error {
 	if len(s) == 0 {
 		return errEmptyPath
