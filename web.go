@@ -35,7 +35,7 @@ func startWeb() error {
 			}))
 		}
 	}
-	e.Use(api.RateLimiter)
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(App.Security.RateLimit)))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: App.Security.CORSList,
@@ -44,8 +44,6 @@ func startWeb() error {
 
 	// Routes
 	e.HEAD("/", api.Alive)
-
-	e.GET("/", api.WS)
 
 	e.GET("/:db", api.ReadDB, api.CheckPathAndPerm(1))
 	e.DELETE("/:db", api.DeleteDB, api.CheckPathAndPerm(1))

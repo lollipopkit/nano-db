@@ -13,7 +13,6 @@ var (
 
 const (
 	contextKeyPath     = "path"
-	contextKeyPassPerm = "pass_perm"
 )
 
 func permissionDenied(c echo.Context) error {
@@ -73,33 +72,11 @@ func CheckPathAndPerm(depth uint8) echo.MiddlewareFunc {
 			c.Set(contextKeyPath, p)
 
 			// 检查权限
-			passPermCheck, ok := c.Get(contextKeyPassPerm).(bool)
-			if !ok || !passPermCheck {
-				if !checkPermission(c) {
-					return permissionDenied(c)
-				}
+			if !checkPermission(c) {
+				return permissionDenied(c)
 			}
 
 			return next(c)
 		}
-	}
-}
-
-var RateLimiter echo.MiddlewareFunc = func(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		identifier := c.RealIP()
-		if allow, err := rateLimiterStore.Allow(identifier); !allow {
-			if checkPermission(c) {
-				c.Set(contextKeyPassPerm, true)
-				return next(c)
-			}
-			c.Error(&echo.HTTPError{
-				Code:     middleware.ErrRateLimitExceeded.Code,
-				Message:  middleware.ErrRateLimitExceeded.Message,
-				Internal: err,
-			})
-			return nil
-		}
-		return next(c)
 	}
 }

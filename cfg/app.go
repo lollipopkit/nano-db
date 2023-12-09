@@ -26,7 +26,7 @@ var (
 			TokenLen:  cst.DefaultTokenLen,
 			RateLimit: rate.Limit(20),
 			CORSList:  []string{},
-			BodyLimit: "1M",
+			BodyLimit: "10M",
 		},
 		Misc: MiscConfig{
 			MaxPathLen: 37,

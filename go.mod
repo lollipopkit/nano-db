@@ -3,7 +3,6 @@ module github.com/lollipopkit/nano-db
 go 1.20
 
 require (
-	github.com/gorilla/websocket v1.5.1
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/lollipopkit/gommon v0.4.4
